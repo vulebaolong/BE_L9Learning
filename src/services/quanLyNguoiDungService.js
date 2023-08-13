@@ -54,6 +54,7 @@ const dangNhap = async (taiKhoan, matKhau) => {
         hoTen: user.hoTen,
         accessToken,
         maLoaiNguoiDung: user.maLoaiNguoiDung,
+        avatar: user.avatar,
     });
 };
 
@@ -101,7 +102,6 @@ const capNhatMatKhau = async (matKhauCurent, matKhauNew, user) => {
 
     return responsesHelper(200, "Xử lý thành công", "Thay đổi mật khẩu thành công");
 };
-
 
 module.exports = {
     dangKy,
