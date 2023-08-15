@@ -10,5 +10,6 @@ router.get("/LayDanhSachKhoaHoc", quanLyKhoaHocController.layDanhSachKhoaHoc);
 router.get("/LayMotKhoaHoc", quanLyKhoaHocController.layMotKhoaHoc);
 router.post("/ThemDanhMucKhoaHoc", quanLyKhoaHocController.themDanhMucKhoaHoc);
 router.post("/ThemKhoaHoc", upload.single("hinhAnh"), quanLyKhoaHocController.themKhoaHoc);
+router.delete("/XoaKhoaHoc", quanLyKhoaHocController.xoaKhoaHoc);
 
 module.exports = router;

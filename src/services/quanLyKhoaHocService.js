@@ -1,4 +1,4 @@
-const { uploadImg } = require("../helpers/ImgHelper");
+const { uploadImg, deleteImg } = require("../helpers/ImgHelper");
 const responsesHelper = require("../helpers/responsesHelper");
 const DanhMucKhoaHocModel = require("../models/danhMucKhoaHoc");
 const KhoaHocModel = require("../models/khoaHocModel");
@@ -81,9 +81,21 @@ const themKhoaHoc = async (file, tenKhoaHoc, moTa, giaTien, seHocDuoc, chuongHoc
     return responsesHelper(200, "Xử lý thành công", khoaHoc);
 };
 
+const xoaKhoaHoc = async (idKhoaHoc) => {
+    if (!idKhoaHoc) return responsesHelper(400, "Thiếu idKhoaHoc khoá học");
+
+    const deletedKhoaHoc = await KhoaHocModel.findByIdAndDelete(idKhoaHoc).select("-createdAt -updatedAt -__v");
+
+    // xoá ảnh cũ
+    await deleteImg(deletedKhoaHoc.tenHinhAnh);
+
+    return responsesHelper(200, "Xử lý thành công", deletedKhoaHoc);
+};
+
 module.exports = {
     layDanhSachKhoaHoc,
     themDanhMucKhoaHoc,
     themKhoaHoc,
     layMotKhoaHoc,
+    xoaKhoaHoc,
 };

@@ -48,9 +48,22 @@ const themKhoaHoc = async (req, res, next) => {
     }
 };
 
+const xoaKhoaHoc = async (req, res, next) => {
+    try {
+        const idKhoaHoc = req.query.idKhoaHoc
+
+        const result = await quanLyKhoaHocService.xoaKhoaHoc(idKhoaHoc);
+
+        res.status(result.code).json(result);
+    } catch (error) {
+        next(error);
+    }
+};
+
 module.exports = {
     layDanhSachKhoaHoc,
     themDanhMucKhoaHoc,
     themKhoaHoc,
-    layMotKhoaHoc
+    layMotKhoaHoc,
+    xoaKhoaHoc
 };

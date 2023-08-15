@@ -12,6 +12,7 @@ const khoaHocSchema = new mongoose.Schema(
         seHocDuoc: { type: [String], default: [] },
         chuongHoc: { type: [Object] },
         hinhAnh: { type: String, trim: true },
+        tenHinhAnh: { type: String, trim: true },
     },
     {
         collection: "khoaHoc",
