@@ -7,6 +7,7 @@ const router = express.Router();
 const upload = multer();
 
 router.get("/LayDanhSachKhoaHoc", quanLyKhoaHocController.layDanhSachKhoaHoc);
+router.get("/LayMotKhoaHoc", quanLyKhoaHocController.layMotKhoaHoc);
 router.post("/ThemDanhMucKhoaHoc", quanLyKhoaHocController.themDanhMucKhoaHoc);
 router.post("/ThemKhoaHoc", upload.single("hinhAnh"), quanLyKhoaHocController.themKhoaHoc);
 

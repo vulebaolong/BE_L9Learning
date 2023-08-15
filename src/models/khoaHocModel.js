@@ -5,9 +5,12 @@ const khoaHocSchema = new mongoose.Schema(
         tenKhoaHoc: { type: String, unique: true, trim: true },
         moTa: { type: String, trim: true },
         ngayTao: { type: String, trim: true },
-        danhMucKhoaHoc_ID: { type: mongoose.Schema.Types.ObjectId, ref: 'danhMucKhoaHoc' },
+        danhMucKhoaHoc_ID: { type: mongoose.Schema.Types.ObjectId, ref: "danhMucKhoaHoc" },
         soLuongHocVien: { type: Number, trim: true, default: 0 },
         luotXem: { type: Number, trim: true, default: 0 },
+        giaTien: { type: Number, trim: true },
+        seHocDuoc: { type: [String], default: [] },
+        chuongHoc: { type: [Object] },
         hinhAnh: { type: String, trim: true },
     },
     {
