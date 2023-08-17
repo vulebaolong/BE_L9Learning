@@ -4,6 +4,7 @@ const DanhMucKhoaHocModel = require("../models/danhMucKhoaHoc");
 const KhoaHocModel = require("../models/khoaHocModel");
 const youtubeHelper = require("../helpers/youtubeHelper");
 const isFileValidHelper = require("../helpers/isFileValidHelper");
+const DangKyKhoaHocModel = require("../models/dangKyKhoaHoc");
 
 const layDanhSachKhoaHoc = async (tenKhoaHoc) => {
     if (!tenKhoaHoc) {
@@ -165,15 +166,26 @@ const capNhatKhoaHoc = async (file, maKhoaHoc, tenKhoaHoc, moTa, giaTien, danhMu
     return responsesHelper(200, "Xử lý thành công", khoaHocUpdate);
 };
 
-const xoaKhoaHoc = async (idKhoaHoc) => {
-    if (!idKhoaHoc) return responsesHelper(400, "Thiếu idKhoaHoc khoá học");
+const xoaKhoaHoc = async (maKhoaHoc) => {
+    if (!maKhoaHoc) return responsesHelper(400, "Thiếu maKhoaHoc khoá học");
 
-    const deletedKhoaHoc = await KhoaHocModel.findByIdAndDelete(idKhoaHoc).select("-createdAt -updatedAt -__v");
+    const deletedKhoaHoc = await KhoaHocModel.findByIdAndDelete(maKhoaHoc).select("-createdAt -updatedAt -__v");
 
     // xoá ảnh cũ
     await deleteImg(deletedKhoaHoc.tenHinhAnh);
 
     return responsesHelper(200, "Xử lý thành công", deletedKhoaHoc);
+};
+
+const dangKyKhoaHoc = async (maKhoaHoc, user) => {
+    if (!maKhoaHoc) return responsesHelper(400, "Thiếu maKhoaHoc mã khoá học");
+
+    const exitDangKyKhoaHoc = await DangKyKhoaHocModel.findOne({ khoaHoc_ID: maKhoaHoc, user_ID: user.id });
+    if (exitDangKyKhoaHoc) return responsesHelper(400, "Khoá học này đã được đăng ký");
+
+    const dangKyKhoaHoc = await DangKyKhoaHocModel.create({ khoaHoc_ID: maKhoaHoc, user_ID: user.id });
+
+    return responsesHelper(200, "Xử lý thành công", dangKyKhoaHoc);
 };
 
 module.exports = {
@@ -184,4 +196,5 @@ module.exports = {
     xoaKhoaHoc,
     capNhatKhoaHoc,
     layDanhMucKhoaHoc,
+    dangKyKhoaHoc,
 };

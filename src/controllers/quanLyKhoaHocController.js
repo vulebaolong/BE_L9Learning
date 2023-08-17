@@ -71,9 +71,22 @@ const capNhatKhoaHoc = async (req, res, next) => {
 
 const xoaKhoaHoc = async (req, res, next) => {
     try {
-        const idKhoaHoc = req.query.idKhoaHoc;
+        const maKhoaHoc = req.query.maKhoaHoc;
 
-        const result = await quanLyKhoaHocService.xoaKhoaHoc(idKhoaHoc);
+        const result = await quanLyKhoaHocService.xoaKhoaHoc(maKhoaHoc);
+
+        res.status(result.code).json(result);
+    } catch (error) {
+        next(error);
+    }
+};
+
+const dangKyKhoaHoc = async (req, res, next) => {
+    try {
+        const maKhoaHoc = req.body.maKhoaHoc;
+        const user = req.user;
+
+        const result = await quanLyKhoaHocService.dangKyKhoaHoc(maKhoaHoc, user);
 
         res.status(result.code).json(result);
     } catch (error) {
@@ -89,4 +102,5 @@ module.exports = {
     xoaKhoaHoc,
     capNhatKhoaHoc,
     layDanhMucKhoaHoc,
+    dangKyKhoaHoc,
 };

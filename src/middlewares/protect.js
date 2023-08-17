@@ -3,7 +3,7 @@ const responsesHelper = require("../helpers/responsesHelper");
 
 const protect = async (req, res, next) => {
     const accessToken = req.headers.authorization;
-    console.log(req.headers.authorization);
+    // console.log(req.headers.authorization);
 
     //Nếu không có token hoặc không bắt đầu bằng "Bearer ", chúng ta trả về lỗi "Không Đủ Quyền Truy Cập"
     if (!accessToken || !accessToken.startsWith("Bearer ")) return res.status(400).json(responsesHelper(400, "Xử Lý Không Thành Công", "Không Đủ Quyền Truy Cập"));

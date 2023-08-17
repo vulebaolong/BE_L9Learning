@@ -1,5 +1,6 @@
 const responsesHelper = require("../helpers/responsesHelper");
 const UserModel = require("../models/userModel");
+const DangKyKhoaHocModel = require("../models/dangKyKhoaHoc");
 const { hashedPassword } = require("../helpers/authHelper");
 const { createJwt } = require("../helpers/authHelper");
 const { checkPassword } = require("../helpers/authHelper");
@@ -61,13 +62,20 @@ const dangNhap = async (taiKhoan, matKhau) => {
 const thongTinTaiKhoan = async (user) => {
     const userReturn = await UserModel.findById(user.id);
 
+    const chiTietKhoaHocGhiDanh = await DangKyKhoaHocModel.find({ user_ID: user.id }).select("-__v -updatedAt -createdAt -user_ID").populate("khoaHoc_ID", "hinhAnh moTa tenKhoaHoc");
+    const chiTietKhoaHocGhiDanhResult = chiTietKhoaHocGhiDanh.map((item) => {
+        return item.khoaHoc_ID;
+    });
     return responsesHelper(200, "Xử lý thành công", {
+        chiTietKhoaHocGhiDanh: chiTietKhoaHocGhiDanhResult,
         id: userReturn._id,
         taiKhoan: userReturn.taiKhoan,
         email: userReturn.email,
         soDt: userReturn.soDt,
         hoTen: userReturn.hoTen,
         maLoaiNguoiDung: userReturn.maLoaiNguoiDung,
+        bannerProfile: userReturn.bannerProfile,
+        avatar: userReturn.avatar,
     });
 };
 
