@@ -24,6 +24,15 @@ const layMotKhoaHoc = async (req, res, next) => {
     }
 };
 
+const layDanhMucKhoaHoc = async (req, res, next) => {
+    try {
+        const result = await quanLyKhoaHocService.layDanhMucKhoaHoc();
+
+        res.status(result.code).json(result);
+    } catch (error) {
+        next(error);
+    }
+};
 const themDanhMucKhoaHoc = async (req, res, next) => {
     try {
         const tenDanhMuc = req.body;
@@ -38,9 +47,21 @@ const themDanhMucKhoaHoc = async (req, res, next) => {
 
 const themKhoaHoc = async (req, res, next) => {
     try {
-        const { tenKhoaHoc, moTa,  giaTien, seHocDuoc, chuongHoc } = req.body;
+        const { tenKhoaHoc, moTa, giaTien, danhMucKhoaHoc_ID, seHocDuoc, chuongHoc } = req.body;
 
-        const result = await quanLyKhoaHocService.themKhoaHoc(req.file, tenKhoaHoc, moTa,  giaTien, seHocDuoc, chuongHoc);
+        const result = await quanLyKhoaHocService.themKhoaHoc(req.file, tenKhoaHoc, moTa, giaTien, danhMucKhoaHoc_ID, seHocDuoc, chuongHoc);
+
+        res.status(result.code).json(result);
+    } catch (error) {
+        next(error);
+    }
+};
+
+const capNhatKhoaHoc = async (req, res, next) => {
+    try {
+        const { maKhoaHoc, tenKhoaHoc, moTa, giaTien, danhMucKhoaHoc_ID, seHocDuoc, chuongHoc } = req.body;
+
+        const result = await quanLyKhoaHocService.capNhatKhoaHoc(req.file, maKhoaHoc, tenKhoaHoc, moTa, giaTien, danhMucKhoaHoc_ID, seHocDuoc, chuongHoc);
 
         res.status(result.code).json(result);
     } catch (error) {
@@ -50,7 +71,7 @@ const themKhoaHoc = async (req, res, next) => {
 
 const xoaKhoaHoc = async (req, res, next) => {
     try {
-        const idKhoaHoc = req.query.idKhoaHoc
+        const idKhoaHoc = req.query.idKhoaHoc;
 
         const result = await quanLyKhoaHocService.xoaKhoaHoc(idKhoaHoc);
 
@@ -65,5 +86,7 @@ module.exports = {
     themDanhMucKhoaHoc,
     themKhoaHoc,
     layMotKhoaHoc,
-    xoaKhoaHoc
+    xoaKhoaHoc,
+    capNhatKhoaHoc,
+    layDanhMucKhoaHoc,
 };

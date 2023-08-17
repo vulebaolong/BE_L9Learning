@@ -9,7 +9,9 @@ const upload = multer();
 router.get("/LayDanhSachKhoaHoc", quanLyKhoaHocController.layDanhSachKhoaHoc);
 router.get("/LayMotKhoaHoc", quanLyKhoaHocController.layMotKhoaHoc);
 router.post("/ThemDanhMucKhoaHoc", quanLyKhoaHocController.themDanhMucKhoaHoc);
+router.get("/LayDanhMucKhoaHoc", quanLyKhoaHocController.layDanhMucKhoaHoc);
 router.post("/ThemKhoaHoc", upload.single("hinhAnh"), quanLyKhoaHocController.themKhoaHoc);
 router.delete("/XoaKhoaHoc", quanLyKhoaHocController.xoaKhoaHoc);
+router.put("/CapNhatKhoaHoc", upload.single("hinhAnh"), quanLyKhoaHocController.capNhatKhoaHoc);
 
 module.exports = router;
