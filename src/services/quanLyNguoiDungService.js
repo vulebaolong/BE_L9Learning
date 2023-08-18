@@ -28,7 +28,6 @@ const dangKy = async (taiKhoan, matKhau, email, soDt, hoTen) => {
         email: user.email,
         soDt: user.soDt,
         hoTen: user.hoTen,
-        matKhau,
         maLoaiNguoiDung: user.maLoaiNguoiDung,
     });
 };
@@ -56,13 +55,16 @@ const dangNhap = async (taiKhoan, matKhau) => {
         accessToken,
         maLoaiNguoiDung: user.maLoaiNguoiDung,
         avatar: user.avatar,
+        bannerProfile: user.bannerProfile,
     });
 };
 
 const thongTinTaiKhoan = async (user) => {
     const userReturn = await UserModel.findById(user.id);
 
-    const chiTietKhoaHocGhiDanh = await DangKyKhoaHocModel.find({ user_ID: user.id }).select("-__v -updatedAt -createdAt -user_ID").populate("khoaHoc_ID", "hinhAnh moTa tenKhoaHoc");
+    const chiTietKhoaHocGhiDanh = await DangKyKhoaHocModel.find({ user_ID: user.id })
+        .select("-__v -updatedAt -createdAt -user_ID")
+        .populate("khoaHoc_ID", "hinhAnh moTa tenKhoaHoc");
     const chiTietKhoaHocGhiDanhResult = chiTietKhoaHocGhiDanh.map((item) => {
         return item.khoaHoc_ID;
     });
@@ -91,6 +93,19 @@ const capNhatThongTinNguoiDung = async (email, hoTen, maLoaiNguoiDung, soDt, tai
     return responsesHelper(200, "Xử lý thành công", userUpdate);
 };
 
+const capNhatMotThongTinNguoiDung = async (body, user) => {
+    const keys = Object.keys(body);
+
+    const key = keys[0];
+    
+    if (!key) return responsesHelper(400, "Thiếu thông tin cần sửa");
+    if (key === "matKhau") return responsesHelper(400, "Vui lòng dùng api capNhatMatKhau");
+
+    const updatedUser = await UserModel.findByIdAndUpdate(user.id, { [key]: body[key] }, { new: true });
+
+    return responsesHelper(200, "Xử lý thành công", updatedUser);
+};
+
 const capNhatMatKhau = async (matKhauCurent, matKhauNew, user) => {
     if (!matKhauCurent) return responsesHelper(400, "Thiếu mật khẩu hiện tại");
     if (!matKhauNew) return responsesHelper(400, "Thiếu mật khẩu mới");
@@ -117,4 +132,5 @@ module.exports = {
     thongTinTaiKhoan,
     capNhatThongTinNguoiDung,
     capNhatMatKhau,
+    capNhatMotThongTinNguoiDung,
 };

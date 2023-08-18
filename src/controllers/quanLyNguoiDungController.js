@@ -24,8 +24,6 @@ const dangNhap = async (req, res, next) => {
     }
 };
 
-
-
 const capNhatThongTinNguoiDung = async (req, res, next) => {
     try {
         const user = req.user;
@@ -39,9 +37,22 @@ const capNhatThongTinNguoiDung = async (req, res, next) => {
     }
 };
 
+const capNhatMotThongTinNguoiDung = async (req, res, next) => {
+    try {
+        const user = req.user;
+
+        const result = await quanLyNguoiDungService.capNhatMotThongTinNguoiDung(req.body, user);
+
+        res.status(result.code).json(result);
+    } catch (error) {
+        next(error);
+    }
+};
+
 const capNhatMatKhau = async (req, res, next) => {
     try {
         const user = req.user;
+        
         const { matKhauCurent, matKhauNew } = req.body;
 
         const result = await quanLyNguoiDungService.capNhatMatKhau(matKhauCurent, matKhauNew, user);
@@ -64,11 +75,11 @@ const thongTinTaiKhoan = async (req, res, next) => {
     }
 };
 
-
 module.exports = {
     dangKy,
     dangNhap,
     thongTinTaiKhoan,
     capNhatThongTinNguoiDung,
     capNhatMatKhau,
+    capNhatMotThongTinNguoiDung,
 };

@@ -11,6 +11,7 @@ router.post("/DangNhap", quanLyNguoiDungController.dangNhap);
 router.use(protect);
 router.get("/ThongTinTaiKhoan", quanLyNguoiDungController.thongTinTaiKhoan);
 router.put("/CapNhatThongTinNguoiDung", quanLyNguoiDungController.capNhatThongTinNguoiDung);
-router.put("/CapNhatMatKhau", quanLyNguoiDungController.capNhatMatKhau);
+router.patch("/CapNhatMotThongTinNguoiDung", quanLyNguoiDungController.capNhatMotThongTinNguoiDung);
+router.patch("/CapNhatMatKhau", quanLyNguoiDungController.capNhatMatKhau);
 
 module.exports = router;
