@@ -4,6 +4,9 @@ const DangKyKhoaHocModel = require("../models/dangKyKhoaHoc");
 const { hashedPassword } = require("../helpers/authHelper");
 const { createJwt } = require("../helpers/authHelper");
 const { checkPassword } = require("../helpers/authHelper");
+const { uploadImg, deleteImg } = require("../helpers/ImgHelper");
+const isFileValidHelper = require("../helpers/isFileValidHelper");
+const { AVATAR_DEFAULT } = require("../contants/imgContant");
 
 const dangKy = async (taiKhoan, matKhau, email, soDt, hoTen) => {
     if (!taiKhoan) return responsesHelper(400, "Thiếu tài khoản");
@@ -46,7 +49,16 @@ const dangNhap = async (taiKhoan, matKhau) => {
     const accessToken = createJwt({ id: `${user._id}`, taiKhoan: user.taiKhoan, email: user.email, soDt: user.soDt, hoTen: user.hoTen }, "90d");
     if (!accessToken) return responsesHelper(500, "Lỗi server: Không tạo được token");
 
+    const chiTietKhoaHocGhiDanh = await DangKyKhoaHocModel.find({ user_ID: user._id })
+    .select("-__v -updatedAt -createdAt -user_ID")
+    .populate("khoaHoc_ID", "hinhAnh moTa tenKhoaHoc");
+
+    const chiTietKhoaHocGhiDanhResult = chiTietKhoaHocGhiDanh.map((item) => {
+        return item.khoaHoc_ID;
+    });
+
     return responsesHelper(200, "Đăng nhập thành công", {
+        chiTietKhoaHocGhiDanh: chiTietKhoaHocGhiDanhResult,
         id: user._id,
         taiKhoan: user.taiKhoan,
         email: user.email,
@@ -65,9 +77,11 @@ const thongTinTaiKhoan = async (user) => {
     const chiTietKhoaHocGhiDanh = await DangKyKhoaHocModel.find({ user_ID: user.id })
         .select("-__v -updatedAt -createdAt -user_ID")
         .populate("khoaHoc_ID", "hinhAnh moTa tenKhoaHoc");
+
     const chiTietKhoaHocGhiDanhResult = chiTietKhoaHocGhiDanh.map((item) => {
         return item.khoaHoc_ID;
     });
+
     return responsesHelper(200, "Xử lý thành công", {
         chiTietKhoaHocGhiDanh: chiTietKhoaHocGhiDanhResult,
         id: userReturn._id,
@@ -97,9 +111,10 @@ const capNhatMotThongTinNguoiDung = async (body, user) => {
     const keys = Object.keys(body);
 
     const key = keys[0];
-    
+
     if (!key) return responsesHelper(400, "Thiếu thông tin cần sửa");
     if (key === "matKhau") return responsesHelper(400, "Vui lòng dùng api capNhatMatKhau");
+    if (key === "avatar") return responsesHelper(400, "Vui lòng dùng api capNhatAvatar");
 
     const updatedUser = await UserModel.findByIdAndUpdate(user.id, { [key]: body[key] }, { new: true });
 
@@ -126,6 +141,56 @@ const capNhatMatKhau = async (matKhauCurent, matKhauNew, user) => {
     return responsesHelper(200, "Xử lý thành công", "Thay đổi mật khẩu thành công");
 };
 
+const capNhatAvatar = async (file, user) => {
+    console.log(file);
+    console.log(user);
+
+    if (!file) return responsesHelper(200, "Giữ lại hình ảnh cũ, không nhận được hình ảnh mới");
+
+    const userDb = await UserModel.findById(user.id);
+
+    if (!userDb) return responsesHelper(400, "Xử lý không thành công", `Người dùng không tồn tại`);
+
+    // Trường hợp thay đổi avart không xoá AVATAR_DEFAULT
+    if (userDb.avatar === AVATAR_DEFAULT) {
+        console.log("Trường hợp thay đổi avart không xoá AVATAR_DEFAULT");
+        const hinhAnhNew = await uploadImg(file, "avatas");
+        const userUpdate = await UserModel.findByIdAndUpdate(
+            userDb._id,
+            {
+                avatar: hinhAnhNew.hinhAnh,
+                tenAvatar: hinhAnhNew.tenHinhAnh,
+            },
+            { new: true }
+        );
+        return responsesHelper(200, "Xử lý thành công", userUpdate);
+    }
+
+    // Trường hợp thay đổi avart xoá avatar cũ
+    if (userDb.avatar !== AVATAR_DEFAULT) {
+        console.log("Trường hợp thay đổi avart xoá avatar cũ");
+        // xoá ảnh cũ
+        const isDeleteImg = await deleteImg(userDb.tenAvatar);
+
+        if (!isDeleteImg) return responsesHelper(400, "Xử lý deleteImg hình ảnh không thành công");
+
+        // thêm ảnh mới
+        if (isDeleteImg) hinhAnhNew = await uploadImg(file, "avatas");
+
+        const userUpdate = await UserModel.findByIdAndUpdate(
+            userDb._id,
+            {
+                avatar: hinhAnhNew.hinhAnh,
+                tenAvatar: hinhAnhNew.tenHinhAnh,
+            },
+            { new: true }
+        );
+        return responsesHelper(200, "Xử lý thành công", userUpdate);
+    }
+
+    return responsesHelper(400, "Có vấn đề, không rơi vào 1 trong 2 trường hợp có và không có AVATAR_DEFAULT");
+};
+
 module.exports = {
     dangKy,
     dangNhap,
@@ -133,4 +198,5 @@ module.exports = {
     capNhatThongTinNguoiDung,
     capNhatMatKhau,
     capNhatMotThongTinNguoiDung,
+    capNhatAvatar,
 };

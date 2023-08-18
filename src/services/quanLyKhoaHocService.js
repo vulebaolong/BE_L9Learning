@@ -188,6 +188,17 @@ const dangKyKhoaHoc = async (maKhoaHoc, user) => {
     return responsesHelper(200, "Xử lý thành công", dangKyKhoaHoc);
 };
 
+const huyDangKyKhoaHoc = async (maKhoaHoc, user) => {
+    if (!maKhoaHoc) return responsesHelper(400, "Thiếu maKhoaHoc mã khoá học");
+
+    // const exitDangKyKhoaHoc = await DangKyKhoaHocModel.findOne({ khoaHoc_ID: maKhoaHoc, user_ID: user.id });
+    // if (exitDangKyKhoaHoc) return responsesHelper(400, "Khoá học này đã được đăng ký");
+
+    // const dangKyKhoaHoc = await DangKyKhoaHocModel.create({ khoaHoc_ID: maKhoaHoc, user_ID: user.id });
+
+    return responsesHelper(200, "Xử lý thành công", { maKhoaHoc });
+};
+
 module.exports = {
     layDanhSachKhoaHoc,
     themDanhMucKhoaHoc,
@@ -197,4 +208,5 @@ module.exports = {
     capNhatKhoaHoc,
     layDanhMucKhoaHoc,
     dangKyKhoaHoc,
+    huyDangKyKhoaHoc,
 };

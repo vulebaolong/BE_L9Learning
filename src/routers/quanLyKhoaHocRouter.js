@@ -17,5 +17,6 @@ router.put("/CapNhatKhoaHoc", upload.single("hinhAnh"), quanLyKhoaHocController.
 //! những dòng mã chạy sau sẽ đều có protect, vì chạy theo thứ tự
 router.use(protect);
 router.post("/DangKyKhoaHoc", quanLyKhoaHocController.dangKyKhoaHoc);
+router.post("/HuyDangKyKhoaHoc", quanLyKhoaHocController.huyDangKyKhoaHoc);
 
 module.exports = router;

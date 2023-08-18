@@ -33,6 +33,7 @@ const layDanhMucKhoaHoc = async (req, res, next) => {
         next(error);
     }
 };
+
 const themDanhMucKhoaHoc = async (req, res, next) => {
     try {
         const tenDanhMuc = req.body;
@@ -94,6 +95,19 @@ const dangKyKhoaHoc = async (req, res, next) => {
     }
 };
 
+const huyDangKyKhoaHoc = async (req, res, next) => {
+    try {
+        const maKhoaHoc = req.body.maKhoaHoc;
+        const user = req.user;
+
+        const result = await quanLyKhoaHocService.huyDangKyKhoaHoc(maKhoaHoc, user);
+
+        res.status(result.code).json(result);
+    } catch (error) {
+        next(error);
+    }
+};
+
 module.exports = {
     layDanhSachKhoaHoc,
     themDanhMucKhoaHoc,
@@ -103,4 +117,5 @@ module.exports = {
     capNhatKhoaHoc,
     layDanhMucKhoaHoc,
     dangKyKhoaHoc,
+    huyDangKyKhoaHoc
 };

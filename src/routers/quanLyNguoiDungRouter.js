@@ -1,8 +1,10 @@
 const express = require("express");
+const multer = require("multer");
 const quanLyNguoiDungController = require("../controllers/quanLyNguoiDungController");
 const protect = require("../middlewares/protect");
 
 const router = express.Router();
+const upload = multer();
 
 router.post("/DangKy", quanLyNguoiDungController.dangKy);
 router.post("/DangNhap", quanLyNguoiDungController.dangNhap);
@@ -13,5 +15,6 @@ router.get("/ThongTinTaiKhoan", quanLyNguoiDungController.thongTinTaiKhoan);
 router.put("/CapNhatThongTinNguoiDung", quanLyNguoiDungController.capNhatThongTinNguoiDung);
 router.patch("/CapNhatMotThongTinNguoiDung", quanLyNguoiDungController.capNhatMotThongTinNguoiDung);
 router.patch("/CapNhatMatKhau", quanLyNguoiDungController.capNhatMatKhau);
+router.patch("/CapNhatAvatar", upload.single("avatar"), quanLyNguoiDungController.capNhatAvatar);
 
 module.exports = router;

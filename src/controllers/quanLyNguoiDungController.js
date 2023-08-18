@@ -75,6 +75,18 @@ const thongTinTaiKhoan = async (req, res, next) => {
     }
 };
 
+const capNhatAvatar = async (req, res, next) => {
+    try {
+        const user = req.user;
+
+        const result = await quanLyNguoiDungService.capNhatAvatar(req.file, user);
+
+        res.status(result.code).json(result);
+    } catch (error) {
+        next(error);
+    }
+};
+
 module.exports = {
     dangKy,
     dangNhap,
@@ -82,4 +94,5 @@ module.exports = {
     capNhatThongTinNguoiDung,
     capNhatMatKhau,
     capNhatMotThongTinNguoiDung,
+    capNhatAvatar
 };
