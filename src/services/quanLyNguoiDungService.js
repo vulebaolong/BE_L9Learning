@@ -7,6 +7,7 @@ const { checkPassword } = require("../helpers/authHelper");
 const { uploadImg, deleteImg } = require("../helpers/ImgHelper");
 const isFileValidHelper = require("../helpers/isFileValidHelper");
 const { AVATAR_DEFAULT } = require("../contants/imgContant");
+const wait = require("../helpers/waitHelper");
 
 const dangKy = async (taiKhoan, matKhau, email, soDt, hoTen) => {
     if (!taiKhoan) return responsesHelper(400, "Thiếu tài khoản");

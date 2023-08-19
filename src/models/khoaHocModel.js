@@ -20,6 +20,8 @@ const khoaHocSchema = new mongoose.Schema(
     }
 );
 
+khoaHocSchema.index({ tenKhoaHoc: 'text' });
+
 // Tạo model User dựa trên schema đã định nghĩa
 const KhoaHocModel = mongoose.model("khoaHoc", khoaHocSchema);
 

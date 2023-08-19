@@ -5,6 +5,8 @@ const KhoaHocModel = require("../models/khoaHocModel");
 const youtubeHelper = require("../helpers/youtubeHelper");
 const isFileValidHelper = require("../helpers/isFileValidHelper");
 const DangKyKhoaHocModel = require("../models/dangKyKhoaHoc");
+const _ = require("lodash");
+const wait = require("../helpers/waitHelper");
 
 const layDanhSachKhoaHoc = async (tenKhoaHoc) => {
     if (!tenKhoaHoc) {
@@ -13,9 +15,9 @@ const layDanhSachKhoaHoc = async (tenKhoaHoc) => {
         return responsesHelper(200, "Xử lý thành công", khoaHocs);
     }
 
-    const khoaHoc = await KhoaHocModel.findOne({ tenKhoaHoc: { $regex: tenKhoaHoc, $options: "i" } })
-        .populate("danhMucKhoaHoc_ID")
-        .select("-createdAt -updatedAt -__v");
+    const fuzzySearchQuery = _.escapeRegExp(tenKhoaHoc);
+
+    const khoaHoc = await KhoaHocModel.find({ tenKhoaHoc: { $regex: fuzzySearchQuery, $options: "i" } }).select("tenKhoaHoc hinhAnh");
 
     return responsesHelper(200, "Xử lý thành công", khoaHoc);
 };
@@ -163,6 +165,8 @@ const capNhatKhoaHoc = async (file, maKhoaHoc, tenKhoaHoc, moTa, giaTien, danhMu
         { new: true }
     );
 
+    // await wait(5000)
+
     return responsesHelper(200, "Xử lý thành công", khoaHocUpdate);
 };
 
@@ -191,12 +195,12 @@ const dangKyKhoaHoc = async (maKhoaHoc, user) => {
 const huyDangKyKhoaHoc = async (maKhoaHoc, user) => {
     if (!maKhoaHoc) return responsesHelper(400, "Thiếu maKhoaHoc mã khoá học");
 
-    // const exitDangKyKhoaHoc = await DangKyKhoaHocModel.findOne({ khoaHoc_ID: maKhoaHoc, user_ID: user.id });
+    const deleteDangKyKhoaHoc = await DangKyKhoaHocModel.findOneAndDelete({ khoaHoc_ID: maKhoaHoc, user_ID: user.id });
     // if (exitDangKyKhoaHoc) return responsesHelper(400, "Khoá học này đã được đăng ký");
 
     // const dangKyKhoaHoc = await DangKyKhoaHocModel.create({ khoaHoc_ID: maKhoaHoc, user_ID: user.id });
 
-    return responsesHelper(200, "Xử lý thành công", { maKhoaHoc });
+    return responsesHelper(200, "Xử lý thành công", deleteDangKyKhoaHoc);
 };
 
 module.exports = {
