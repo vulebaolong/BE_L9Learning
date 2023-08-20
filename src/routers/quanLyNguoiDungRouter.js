@@ -16,5 +16,8 @@ router.put("/CapNhatThongTinNguoiDung", quanLyNguoiDungController.capNhatThongTi
 router.patch("/CapNhatMotThongTinNguoiDung", quanLyNguoiDungController.capNhatMotThongTinNguoiDung);
 router.patch("/CapNhatMatKhau", quanLyNguoiDungController.capNhatMatKhau);
 router.patch("/CapNhatAvatar", upload.single("avatar"), quanLyNguoiDungController.capNhatAvatar);
+router.get("/LayDanhSachNguoiDung", quanLyNguoiDungController.layDanhSachNguoiDung);
+router.delete("/XoaNguoiDung", quanLyNguoiDungController.xoaNguoiDung);
+
 
 module.exports = router;

@@ -52,7 +52,7 @@ const capNhatMotThongTinNguoiDung = async (req, res, next) => {
 const capNhatMatKhau = async (req, res, next) => {
     try {
         const user = req.user;
-        
+
         const { matKhauCurent, matKhauNew } = req.body;
 
         const result = await quanLyNguoiDungService.capNhatMatKhau(matKhauCurent, matKhauNew, user);
@@ -87,6 +87,30 @@ const capNhatAvatar = async (req, res, next) => {
     }
 };
 
+const layDanhSachNguoiDung = async (req, res, next) => {
+    try {
+        const tenNguoiDung = req.query.tenNguoiDung;
+
+        const result = await quanLyNguoiDungService.layDanhSachNguoiDung(tenNguoiDung);
+
+        res.status(result.code).json(result);
+    } catch (error) {
+        next(error);
+    }
+};
+
+const xoaNguoiDung = async (req, res, next) => {
+    try {
+        const idNguoiDung = req.query.idNguoiDung;
+
+        const result = await quanLyNguoiDungService.xoaNguoiDung(idNguoiDung);
+
+        res.status(result.code).json(result);
+    } catch (error) {
+        next(error);
+    }
+};
+
 module.exports = {
     dangKy,
     dangNhap,
@@ -94,5 +118,7 @@ module.exports = {
     capNhatThongTinNguoiDung,
     capNhatMatKhau,
     capNhatMotThongTinNguoiDung,
-    capNhatAvatar
+    capNhatAvatar,
+    layDanhSachNguoiDung,
+    xoaNguoiDung
 };

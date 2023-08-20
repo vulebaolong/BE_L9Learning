@@ -51,8 +51,8 @@ const dangNhap = async (taiKhoan, matKhau) => {
     if (!accessToken) return responsesHelper(500, "Lỗi server: Không tạo được token");
 
     const chiTietKhoaHocGhiDanh = await DangKyKhoaHocModel.find({ user_ID: user._id })
-    .select("-__v -updatedAt -createdAt -user_ID")
-    .populate("khoaHoc_ID", "hinhAnh moTa tenKhoaHoc");
+        .select("-__v -updatedAt -createdAt -user_ID")
+        .populate("khoaHoc_ID", "hinhAnh moTa tenKhoaHoc");
 
     const chiTietKhoaHocGhiDanhResult = chiTietKhoaHocGhiDanh.map((item) => {
         return item.khoaHoc_ID;
@@ -192,6 +192,44 @@ const capNhatAvatar = async (file, user) => {
     return responsesHelper(400, "Có vấn đề, không rơi vào 1 trong 2 trường hợp có và không có AVATAR_DEFAULT");
 };
 
+const layDanhSachNguoiDung = async (tenNguoiDung) => {
+    if (!tenNguoiDung) {
+        const danhSachNguoiDung = await UserModel.find().select("-createdAt -updatedAt -__v");
+
+        // await wait(3000)
+
+        return responsesHelper(200, "Xử lý thành công", danhSachNguoiDung);
+    }
+
+    const fuzzySearchQuery = _.escapeRegExp(tenNguoiDung);
+
+    const danhSachNguoiDung = await UserModel.find({ tenNguoiDung: { $regex: fuzzySearchQuery, $options: "i" } }).select("-createdAt -updatedAt -__v");
+
+    return responsesHelper(200, "Xử lý thành công", danhSachNguoiDung);
+};
+
+const xoaNguoiDung = async (idNguoiDung) => {
+    if (!idNguoiDung) return responsesHelper(400, "Thiếu idNguoiDung tài khoản");
+
+    // Kiểm tra idNguoiDung có tồn tại người dùng không
+    const userDb = await UserModel.findById(idNguoiDung);
+    if (!userDb) return responsesHelper(400, "Xử lý không thành công", `Người dùng không tồn tại`);
+
+    // Xoá người dùng
+    const deletedNguoiDung = await UserModel.findByIdAndDelete(userDb._id).select("-createdAt -updatedAt -__v");
+
+    // xóa tất cả các documents có user_ID
+    await DangKyKhoaHocModel.deleteMany({ user_ID: deletedNguoiDung._id });
+
+    // Trường hợp đã từng thay đổi avatar nên phải xoá avatar
+    if (deletedNguoiDung.avatar !== AVATAR_DEFAULT) {
+        const isDeleteImg = await deleteImg(deletedNguoiDung.tenAvatar);
+        if (!isDeleteImg) return responsesHelper(400, "Xử lý deleteImg hình ảnh không thành công");
+    }
+
+    return responsesHelper(200, "Xử lý thành công", deletedNguoiDung);
+};
+
 module.exports = {
     dangKy,
     dangNhap,
@@ -200,4 +238,6 @@ module.exports = {
     capNhatMatKhau,
     capNhatMotThongTinNguoiDung,
     capNhatAvatar,
+    layDanhSachNguoiDung,
+    xoaNguoiDung,
 };

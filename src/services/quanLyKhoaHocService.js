@@ -199,7 +199,15 @@ const capNhatKhoaHoc = async (file, maKhoaHoc, tenKhoaHoc, moTa, giaTien, danhMu
 const xoaKhoaHoc = async (maKhoaHoc) => {
     if (!maKhoaHoc) return responsesHelper(400, "Thiếu maKhoaHoc khoá học");
 
-    const deletedKhoaHoc = await KhoaHocModel.findByIdAndDelete(maKhoaHoc).select("-createdAt -updatedAt -__v");
+     // Kiểm tra maKhoaHoc có tồn tại khoá học không
+     const khoaHocDb = await KhoaHocModel.findById(maKhoaHoc);
+     if (!khoaHocDb) return responsesHelper(400, "Xử lý không thành công", `Khoá học không tồn tại`);
+
+    // tìm và xoá khoá học
+    const deletedKhoaHoc = await KhoaHocModel.findByIdAndDelete(khoaHocDb._id).select("-createdAt -updatedAt -__v");
+
+    // xóa tất cả các documents có khoaHoc_ID
+    await DangKyKhoaHocModel.deleteMany({ khoaHoc_ID: deletedKhoaHoc._id })
 
     // xoá ảnh cũ
     await deleteImg(deletedKhoaHoc.tenHinhAnh);
