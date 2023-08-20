@@ -24,6 +24,18 @@ const layMotKhoaHoc = async (req, res, next) => {
     }
 };
 
+const layKhoaHocTheoDanhMuc = async (req, res, next) => {
+    try {
+        const maDanhMuc = req.query.maDanhMuc;
+
+        const result = await quanLyKhoaHocService.layKhoaHocTheoDanhMuc(maDanhMuc);
+
+        res.status(result.code).json(result);
+    } catch (error) {
+        next(error);
+    }
+};
+
 const layDanhMucKhoaHoc = async (req, res, next) => {
     try {
         const result = await quanLyKhoaHocService.layDanhMucKhoaHoc();
@@ -117,5 +129,6 @@ module.exports = {
     capNhatKhoaHoc,
     layDanhMucKhoaHoc,
     dangKyKhoaHoc,
-    huyDangKyKhoaHoc
+    huyDangKyKhoaHoc,
+    layKhoaHocTheoDanhMuc
 };

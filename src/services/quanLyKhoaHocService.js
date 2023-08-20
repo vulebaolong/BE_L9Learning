@@ -7,10 +7,13 @@ const isFileValidHelper = require("../helpers/isFileValidHelper");
 const DangKyKhoaHocModel = require("../models/dangKyKhoaHoc");
 const _ = require("lodash");
 const wait = require("../helpers/waitHelper");
+const filterKhoaHocTheoDanhMuc = require("../helpers/khoaHocHelper");
 
 const layDanhSachKhoaHoc = async (tenKhoaHoc) => {
     if (!tenKhoaHoc) {
         const khoaHocs = await KhoaHocModel.find().populate("danhMucKhoaHoc_ID").select("-createdAt -updatedAt -__v");
+
+        // await wait(3000)
 
         return responsesHelper(200, "Xử lý thành công", khoaHocs);
     }
@@ -28,6 +31,27 @@ const layMotKhoaHoc = async (id) => {
     const khoaHoc = await KhoaHocModel.findById(id).populate("danhMucKhoaHoc_ID").select("-createdAt -updatedAt -__v");
 
     return responsesHelper(200, "Xử lý thành công", khoaHoc);
+};
+
+const layKhoaHocTheoDanhMuc = async (maDanhMuc) => {
+    if (!maDanhMuc) {
+        const danhMucKhoaHoc = await DanhMucKhoaHocModel.find().select("-createdAt -updatedAt -__v");
+
+        const danhSachKhoaHoc = await KhoaHocModel.find().populate("danhMucKhoaHoc_ID", "tenDanhMuc").select("hinhAnh tenKhoaHoc");
+
+        const khoaHocTheoDanhMuc = filterKhoaHocTheoDanhMuc(danhMucKhoaHoc, danhSachKhoaHoc)
+
+        return responsesHelper(200, "Xử lý thành công", khoaHocTheoDanhMuc);
+    }
+    const danhMucKhoaHoc = await DanhMucKhoaHocModel.findById(maDanhMuc).select("-createdAt -updatedAt -__v");
+    
+    const danhSachKhoaHoc = await KhoaHocModel.find({ danhMucKhoaHoc_ID: maDanhMuc }).populate("danhMucKhoaHoc_ID", "tenDanhMuc").select("hinhAnh tenKhoaHoc");
+    
+    const khoaHocTheoDanhMuc = filterKhoaHocTheoDanhMuc([danhMucKhoaHoc], danhSachKhoaHoc)
+
+    // await wait(3000)
+
+    return responsesHelper(200, "Xử lý thành công", khoaHocTheoDanhMuc);
 };
 
 const layDanhMucKhoaHoc = async () => {
@@ -90,6 +114,8 @@ const themKhoaHoc = async (file, tenKhoaHoc, moTa, giaTien, danhMucKhoaHoc_ID, s
         hinhAnh: objHinhAnh.hinhAnh,
         tenHinhAnh: objHinhAnh.tenHinhAnh,
     });
+
+    // await wait(3000)
 
     return responsesHelper(200, "Xử lý thành công", khoaHoc);
 };
@@ -189,6 +215,8 @@ const dangKyKhoaHoc = async (maKhoaHoc, user) => {
 
     const dangKyKhoaHoc = await DangKyKhoaHocModel.create({ khoaHoc_ID: maKhoaHoc, user_ID: user.id });
 
+    // await wait(3000);
+
     return responsesHelper(200, "Xử lý thành công", dangKyKhoaHoc);
 };
 
@@ -199,6 +227,7 @@ const huyDangKyKhoaHoc = async (maKhoaHoc, user) => {
     // if (exitDangKyKhoaHoc) return responsesHelper(400, "Khoá học này đã được đăng ký");
 
     // const dangKyKhoaHoc = await DangKyKhoaHocModel.create({ khoaHoc_ID: maKhoaHoc, user_ID: user.id });
+    // await wait(3000);
 
     return responsesHelper(200, "Xử lý thành công", deleteDangKyKhoaHoc);
 };
@@ -213,4 +242,5 @@ module.exports = {
     layDanhMucKhoaHoc,
     dangKyKhoaHoc,
     huyDangKyKhoaHoc,
+    layKhoaHocTheoDanhMuc,
 };
