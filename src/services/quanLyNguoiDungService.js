@@ -8,6 +8,8 @@ const { uploadImg, deleteImg } = require("../helpers/ImgHelper");
 const isFileValidHelper = require("../helpers/isFileValidHelper");
 const { AVATAR_DEFAULT } = require("../contants/imgContant");
 const wait = require("../helpers/waitHelper");
+const KhoaHocModel = require("../models/khoaHocModel");
+const changeObj = require("../helpers/changeObjHelper");
 
 const dangKy = async (taiKhoan, matKhau, email, soDt, hoTen) => {
     if (!taiKhoan) return responsesHelper(400, "Thiếu tài khoản");
@@ -96,7 +98,7 @@ const thongTinTaiKhoan = async (user) => {
     });
 };
 
-const capNhatThongTinNguoiDung = async (email, hoTen, maLoaiNguoiDung, soDt, taiKhoan, user) => {
+const capNhatThongTinTaiKhoan = async (email, hoTen, maLoaiNguoiDung, soDt, taiKhoan, user) => {
     if (!email) return responsesHelper(400, "Thiếu email");
     if (!hoTen) return responsesHelper(400, "Thiếu họ tên");
     if (!maLoaiNguoiDung) return responsesHelper(400, "Thiếu mã loại nơiời dùng");
@@ -108,7 +110,7 @@ const capNhatThongTinNguoiDung = async (email, hoTen, maLoaiNguoiDung, soDt, tai
     return responsesHelper(200, "Xử lý thành công", userUpdate);
 };
 
-const capNhatMotThongTinNguoiDung = async (body, user) => {
+const capNhatMotThongTinTaiKhoan = async (body, user) => {
     const keys = Object.keys(body);
 
     const key = keys[0];
@@ -116,6 +118,7 @@ const capNhatMotThongTinNguoiDung = async (body, user) => {
     if (!key) return responsesHelper(400, "Thiếu thông tin cần sửa");
     if (key === "matKhau") return responsesHelper(400, "Vui lòng dùng api capNhatMatKhau");
     if (key === "avatar") return responsesHelper(400, "Vui lòng dùng api capNhatAvatar");
+    if (key === "bannerProfile") return responsesHelper(400, "Vui lòng dùng api capNhatBannerProfile");
 
     const updatedUser = await UserModel.findByIdAndUpdate(user.id, { [key]: body[key] }, { new: true });
 
@@ -142,9 +145,9 @@ const capNhatMatKhau = async (matKhauCurent, matKhauNew, user) => {
     return responsesHelper(200, "Xử lý thành công", "Thay đổi mật khẩu thành công");
 };
 
-const capNhatAvatar = async (file, user) => {
-    console.log(file);
-    console.log(user);
+const capNhatAvatarTaiKhoan = async (file, user) => {
+    // console.log(file);
+    // console.log(user);
 
     if (!file) return responsesHelper(200, "Giữ lại hình ảnh cũ, không nhận được hình ảnh mới");
 
@@ -192,6 +195,56 @@ const capNhatAvatar = async (file, user) => {
     return responsesHelper(400, "Có vấn đề, không rơi vào 1 trong 2 trường hợp có và không có AVATAR_DEFAULT");
 };
 
+const capNhatAvatarNguoiDung = async (file, idNguoiDung) => {
+    console.log(file);
+    console.log(idNguoiDung);
+    if (!file) return responsesHelper(200, "Giữ lại hình ảnh cũ, không nhận được hình ảnh mới");
+
+    const userDb = await UserModel.findById(idNguoiDung);
+
+    if (!userDb) return responsesHelper(400, "Xử lý không thành công", `Người dùng không tồn tại`);
+
+    // Trường hợp thay đổi avart không xoá AVATAR_DEFAULT
+    if (userDb.avatar === AVATAR_DEFAULT) {
+        console.log("Trường hợp thay đổi avart không xoá AVATAR_DEFAULT");
+        const hinhAnhNew = await uploadImg(file, "avatas");
+        const userUpdate = await UserModel.findByIdAndUpdate(
+            userDb._id,
+            {
+                avatar: hinhAnhNew.hinhAnh,
+                tenAvatar: hinhAnhNew.tenHinhAnh,
+            },
+            { new: true }
+        );
+        return responsesHelper(200, "Xử lý thành công", userUpdate);
+    }
+
+    // Trường hợp thay đổi avart xoá avatar cũ
+    if (userDb.avatar !== AVATAR_DEFAULT) {
+        console.log("Trường hợp thay đổi avart xoá avatar cũ");
+        // xoá ảnh cũ
+        const isDeleteImg = await deleteImg(userDb.tenAvatar);
+
+        if (!isDeleteImg) return responsesHelper(400, "Xử lý deleteImg hình ảnh không thành công");
+
+        // thêm ảnh mới
+        if (isDeleteImg) hinhAnhNew = await uploadImg(file, "avatas");
+
+        const userUpdate = await UserModel.findByIdAndUpdate(
+            userDb._id,
+            {
+                avatar: hinhAnhNew.hinhAnh,
+                tenAvatar: hinhAnhNew.tenHinhAnh,
+            },
+            { new: true }
+        );
+        return responsesHelper(200, "Xử lý thành công", userUpdate);
+    }
+
+    return responsesHelper(400, "Có vấn đề, không rơi vào 1 trong 2 trường hợp có và không có AVATAR_DEFAULT");
+    // return responsesHelper(200, "Xử lý thành công", file);
+};
+
 const layDanhSachNguoiDung = async (tenNguoiDung) => {
     if (!tenNguoiDung) {
         const danhSachNguoiDung = await UserModel.find().select("-createdAt -updatedAt -__v");
@@ -206,6 +259,37 @@ const layDanhSachNguoiDung = async (tenNguoiDung) => {
     const danhSachNguoiDung = await UserModel.find({ tenNguoiDung: { $regex: fuzzySearchQuery, $options: "i" } }).select("-createdAt -updatedAt -__v");
 
     return responsesHelper(200, "Xử lý thành công", danhSachNguoiDung);
+};
+
+const layThongTinNguoiDung = async (idNguoiDung) => {
+    if (!idNguoiDung) return responsesHelper(400, "Thiếu idNguoiDung tài khoản");
+
+    const nguoiDung = await UserModel.findById(idNguoiDung).select("-createdAt -updatedAt -__v");
+    if (!nguoiDung) return responsesHelper(400, "Xử lý không thành công", `Người dùng không tồn tại`);
+
+    return responsesHelper(200, "Xử lý thành công", nguoiDung);
+};
+
+const capNhatMotThongTinNguoiDung = async (thongTin) => {
+    const { idNguoiDung, ...newObject } = thongTin;
+    if (!idNguoiDung) return responsesHelper(400, "Thiếu idNguoiDung");
+
+    // Kiểm tra idNguoiDung có tồn tại người dùng không
+    const userDb = await UserModel.findById(idNguoiDung);
+    if (!userDb) return responsesHelper(400, "Xử lý không thành công", `Người dùng không tồn tại`);
+
+    const keys = Object.keys(newObject);
+
+    const key = keys[0];
+
+    if (!key) return responsesHelper(400, "Thiếu thông tin cần sửa");
+    if (key === "matKhau") return responsesHelper(400, "Vui lòng dùng api capNhatMatKhau");
+    if (key === "avatar") return responsesHelper(400, "Vui lòng dùng api capNhatAvatar");
+    if (key === "bannerProfile") return responsesHelper(400, "Vui lòng dùng api capNhatBannerProfile");
+
+    const updatedUser = await UserModel.findByIdAndUpdate(userDb._id, { [key]: newObject[key] }, { new: true });
+
+    return responsesHelper(200, "Xử lý thành công", updatedUser);
 };
 
 const xoaNguoiDung = async (idNguoiDung) => {
@@ -230,14 +314,67 @@ const xoaNguoiDung = async (idNguoiDung) => {
     return responsesHelper(200, "Xử lý thành công", deletedNguoiDung);
 };
 
+const layThongTinKhoaHocNguoiDung = async (idNguoiDung) => {
+    if (!idNguoiDung) return responsesHelper(400, "Thiếu idNguoiDung tài khoản");
+
+    const nguoiDung = await UserModel.findById(idNguoiDung).select("-createdAt -updatedAt -__v");
+    if (!nguoiDung) return responsesHelper(400, "Xử lý không thành công", `Người dùng không tồn tại`);
+
+    // LỌC KHOÁ HỌC ĐÃ ĐĂNG KÝ =================================================================
+    let khoaHocDaDangKy = changeObj(
+        await DangKyKhoaHocModel.find({ user_ID: idNguoiDung }).select("-__v -updatedAt -createdAt -user_ID").populate("khoaHoc_ID", "hinhAnh tenKhoaHoc")
+    );
+    khoaHocDaDangKy = khoaHocDaDangKy.map((khoaHoc) => {
+        return { ...khoaHoc.khoaHoc_ID };
+    });
+
+    // LỌC KHOÁ HỌC CHƯA ĐĂNG KÝ ===============================================================
+    const arrIdKhoaHocDaDangKy = khoaHocDaDangKy.map((khoaHoc) => khoaHoc._id);
+
+    // từ mảng các id chứa khoá học đã đăng ký: arrIdKhoaHocDaDangKy
+    // tìm kiếm trong KhoaHocModel những documents không có trong arrIdKhoaHocDaDangKy
+    const khoaHocChuaDangKy = await KhoaHocModel.find({ _id: { $nin: arrIdKhoaHocDaDangKy } }).select("hinhAnh tenKhoaHoc");
+
+    const result = {
+        nguoiDung,
+        khoaHocDaDangKy,
+        khoaHocChuaDangKy,
+    };
+    return responsesHelper(200, "Xử lý thành công", result);
+};
+
+const huyDangKyKhoaHocChoNguoiDung = async (idNguoiDung, idKhoaHoc) => {
+    if (!idNguoiDung) return responsesHelper(400, "Thiếu idNguoiDung");
+    if (!idKhoaHoc) return responsesHelper(400, "Thiếu idKhoaHoc");
+
+    const result = await DangKyKhoaHocModel.deleteMany({ khoaHoc_ID: idKhoaHoc, user_ID: idNguoiDung });
+
+    return responsesHelper(200, "Xử lý thành công", result);
+};
+
+const dangKyKhoaHocChoNguoiDung = async (idNguoiDung, idKhoaHoc) => {
+    if (!idNguoiDung) return responsesHelper(400, "Thiếu idNguoiDung");
+    if (!idKhoaHoc) return responsesHelper(400, "Thiếu idKhoaHoc");
+
+    const result = await DangKyKhoaHocModel.create({ khoaHoc_ID: idKhoaHoc, user_ID: idNguoiDung });
+
+    return responsesHelper(200, "Xử lý thành công",  result);
+};
+
 module.exports = {
     dangKy,
     dangNhap,
     thongTinTaiKhoan,
-    capNhatThongTinNguoiDung,
+    capNhatThongTinTaiKhoan,
+    capNhatMotThongTinTaiKhoan,
     capNhatMatKhau,
-    capNhatMotThongTinNguoiDung,
-    capNhatAvatar,
+    capNhatAvatarTaiKhoan,
+    capNhatAvatarNguoiDung,
     layDanhSachNguoiDung,
+    layThongTinNguoiDung,
+    capNhatMotThongTinNguoiDung,
     xoaNguoiDung,
+    layThongTinKhoaHocNguoiDung,
+    huyDangKyKhoaHocChoNguoiDung,
+    dangKyKhoaHocChoNguoiDung,
 };

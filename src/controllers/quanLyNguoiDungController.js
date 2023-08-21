@@ -24,12 +24,12 @@ const dangNhap = async (req, res, next) => {
     }
 };
 
-const capNhatThongTinNguoiDung = async (req, res, next) => {
+const capNhatThongTinTaiKhoan = async (req, res, next) => {
     try {
         const user = req.user;
         const { email, hoTen, maLoaiNguoiDung, soDt, taiKhoan } = req.body;
 
-        const result = await quanLyNguoiDungService.capNhatThongTinNguoiDung(email, hoTen, maLoaiNguoiDung, soDt, taiKhoan, user);
+        const result = await quanLyNguoiDungService.capNhatThongTinTaiKhoan(email, hoTen, maLoaiNguoiDung, soDt, taiKhoan, user);
 
         res.status(result.code).json(result);
     } catch (error) {
@@ -37,11 +37,11 @@ const capNhatThongTinNguoiDung = async (req, res, next) => {
     }
 };
 
-const capNhatMotThongTinNguoiDung = async (req, res, next) => {
+const capNhatMotThongTinTaiKhoan = async (req, res, next) => {
     try {
         const user = req.user;
 
-        const result = await quanLyNguoiDungService.capNhatMotThongTinNguoiDung(req.body, user);
+        const result = await quanLyNguoiDungService.capNhatMotThongTinTaiKhoan(req.body, user);
 
         res.status(result.code).json(result);
     } catch (error) {
@@ -75,11 +75,23 @@ const thongTinTaiKhoan = async (req, res, next) => {
     }
 };
 
-const capNhatAvatar = async (req, res, next) => {
+const capNhatAvatarTaiKhoan = async (req, res, next) => {
     try {
         const user = req.user;
 
-        const result = await quanLyNguoiDungService.capNhatAvatar(req.file, user);
+        const result = await quanLyNguoiDungService.capNhatAvatarTaiKhoan(req.file, user);
+
+        res.status(result.code).json(result);
+    } catch (error) {
+        next(error);
+    }
+};
+
+const capNhatAvatarNguoiDung = async (req, res, next) => {
+    try {
+        const idNguoiDung = req.body.idNguoiDung;
+
+        const result = await quanLyNguoiDungService.capNhatAvatarNguoiDung(req.file, idNguoiDung);
 
         res.status(result.code).json(result);
     } catch (error) {
@@ -99,6 +111,30 @@ const layDanhSachNguoiDung = async (req, res, next) => {
     }
 };
 
+const layThongTinNguoiDung = async (req, res, next) => {
+    try {
+        const idNguoiDung = req.query.idNguoiDung;
+
+        const result = await quanLyNguoiDungService.layThongTinNguoiDung(idNguoiDung);
+
+        res.status(result.code).json(result);
+    } catch (error) {
+        next(error);
+    }
+};
+
+const capNhatMotThongTinNguoiDung = async (req, res, next) => {
+    try {
+        const thongTin = req.body;
+
+        const result = await quanLyNguoiDungService.capNhatMotThongTinNguoiDung(thongTin);
+
+        res.status(result.code).json(result);
+    } catch (error) {
+        next(error);
+    }
+};
+
 const xoaNguoiDung = async (req, res, next) => {
     try {
         const idNguoiDung = req.query.idNguoiDung;
@@ -111,14 +147,56 @@ const xoaNguoiDung = async (req, res, next) => {
     }
 };
 
+const layThongTinKhoaHocNguoiDung = async (req, res, next) => {
+    try {
+        const idNguoiDung = req.query.idNguoiDung;
+
+        const result = await quanLyNguoiDungService.layThongTinKhoaHocNguoiDung(idNguoiDung);
+
+        res.status(result.code).json(result);
+    } catch (error) {
+        next(error);
+    }
+};
+
+const huyDangKyKhoaHocChoNguoiDung = async (req, res, next) => {
+    try {
+        const { idNguoiDung, idKhoaHoc } = req.body;
+
+        const result = await quanLyNguoiDungService.huyDangKyKhoaHocChoNguoiDung(idNguoiDung, idKhoaHoc);
+
+        res.status(result.code).json(result);
+    } catch (error) {
+        next(error);
+    }
+};
+
+const dangKyKhoaHocChoNguoiDung = async (req, res, next) => {
+    try {
+        const { idNguoiDung, idKhoaHoc } = req.body;
+
+        const result = await quanLyNguoiDungService.dangKyKhoaHocChoNguoiDung(idNguoiDung, idKhoaHoc);
+
+        res.status(result.code).json(result);
+    } catch (error) {
+        next(error);
+    }
+};
+
 module.exports = {
     dangKy,
     dangNhap,
     thongTinTaiKhoan,
-    capNhatThongTinNguoiDung,
+    capNhatThongTinTaiKhoan,
+    capNhatMotThongTinTaiKhoan,
     capNhatMatKhau,
-    capNhatMotThongTinNguoiDung,
-    capNhatAvatar,
+    capNhatAvatarTaiKhoan,
     layDanhSachNguoiDung,
-    xoaNguoiDung
+    layThongTinNguoiDung,
+    capNhatMotThongTinNguoiDung,
+    xoaNguoiDung,
+    capNhatAvatarNguoiDung,
+    layThongTinKhoaHocNguoiDung,
+    huyDangKyKhoaHocChoNguoiDung,
+    dangKyKhoaHocChoNguoiDung,
 };
