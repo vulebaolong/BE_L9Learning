@@ -24,7 +24,7 @@ router.get("/LayThongTinNguoiDung", quanLyNguoiDungController.layThongTinNguoiDu
 router.patch("/CapNhatMotThongTinNguoiDung", quanLyNguoiDungController.capNhatMotThongTinNguoiDung);
 router.delete("/XoaNguoiDung", quanLyNguoiDungController.xoaNguoiDung);
 router.patch("/CapNhatAvatarNguoiDung", upload.single("avatar"), quanLyNguoiDungController.capNhatAvatarNguoiDung);
-router.get("/LayThongTinKhoaHocNguoiDung", quanLyNguoiDungController.layThongTinKhoaHocNguoiDung);
+router.get("/LayThongTinKhoaHocChoNguoiDung", quanLyNguoiDungController.layThongTinKhoaHocChoNguoiDung);
 router.post("/DangKyKhoaHocChoNguoiDung", quanLyNguoiDungController.dangKyKhoaHocChoNguoiDung);
 router.post("/HuyDangKyKhoaHocChoNguoiDung", quanLyNguoiDungController.huyDangKyKhoaHocChoNguoiDung);
 

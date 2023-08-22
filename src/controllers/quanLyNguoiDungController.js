@@ -147,11 +147,11 @@ const xoaNguoiDung = async (req, res, next) => {
     }
 };
 
-const layThongTinKhoaHocNguoiDung = async (req, res, next) => {
+const layThongTinKhoaHocChoNguoiDung = async (req, res, next) => {
     try {
         const idNguoiDung = req.query.idNguoiDung;
 
-        const result = await quanLyNguoiDungService.layThongTinKhoaHocNguoiDung(idNguoiDung);
+        const result = await quanLyNguoiDungService.layThongTinKhoaHocChoNguoiDung(idNguoiDung);
 
         res.status(result.code).json(result);
     } catch (error) {
@@ -196,7 +196,7 @@ module.exports = {
     capNhatMotThongTinNguoiDung,
     xoaNguoiDung,
     capNhatAvatarNguoiDung,
-    layThongTinKhoaHocNguoiDung,
+    layThongTinKhoaHocChoNguoiDung,
     huyDangKyKhoaHocChoNguoiDung,
     dangKyKhoaHocChoNguoiDung,
 };

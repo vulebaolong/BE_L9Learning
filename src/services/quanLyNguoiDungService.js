@@ -314,7 +314,7 @@ const xoaNguoiDung = async (idNguoiDung) => {
     return responsesHelper(200, "Xử lý thành công", deletedNguoiDung);
 };
 
-const layThongTinKhoaHocNguoiDung = async (idNguoiDung) => {
+const layThongTinKhoaHocChoNguoiDung = async (idNguoiDung) => {
     if (!idNguoiDung) return responsesHelper(400, "Thiếu idNguoiDung tài khoản");
 
     const nguoiDung = await UserModel.findById(idNguoiDung).select("-createdAt -updatedAt -__v");
@@ -322,7 +322,7 @@ const layThongTinKhoaHocNguoiDung = async (idNguoiDung) => {
 
     // LỌC KHOÁ HỌC ĐÃ ĐĂNG KÝ =================================================================
     let khoaHocDaDangKy = changeObj(
-        await DangKyKhoaHocModel.find({ user_ID: idNguoiDung }).select("-__v -updatedAt -createdAt -user_ID").populate("khoaHoc_ID", "hinhAnh tenKhoaHoc")
+        await DangKyKhoaHocModel.find({ user_ID: nguoiDung._id }).select("-__v -updatedAt -createdAt -user_ID").populate("khoaHoc_ID", "hinhAnh tenKhoaHoc")
     );
     khoaHocDaDangKy = khoaHocDaDangKy.map((khoaHoc) => {
         return { ...khoaHoc.khoaHoc_ID };
@@ -374,7 +374,7 @@ module.exports = {
     layThongTinNguoiDung,
     capNhatMotThongTinNguoiDung,
     xoaNguoiDung,
-    layThongTinKhoaHocNguoiDung,
+    layThongTinKhoaHocChoNguoiDung,
     huyDangKyKhoaHocChoNguoiDung,
     dangKyKhoaHocChoNguoiDung,
 };

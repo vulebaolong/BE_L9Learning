@@ -8,6 +8,8 @@ const DangKyKhoaHocModel = require("../models/dangKyKhoaHoc");
 const _ = require("lodash");
 const wait = require("../helpers/waitHelper");
 const filterKhoaHocTheoDanhMuc = require("../helpers/khoaHocHelper");
+const UserModel = require("../models/userModel");
+const changeObj = require("../helpers/changeObjHelper");
 
 const layDanhSachKhoaHoc = async (tenKhoaHoc) => {
     if (!tenKhoaHoc) {
@@ -39,15 +41,15 @@ const layKhoaHocTheoDanhMuc = async (maDanhMuc) => {
 
         const danhSachKhoaHoc = await KhoaHocModel.find().populate("danhMucKhoaHoc_ID", "tenDanhMuc").select("hinhAnh tenKhoaHoc");
 
-        const khoaHocTheoDanhMuc = filterKhoaHocTheoDanhMuc(danhMucKhoaHoc, danhSachKhoaHoc)
+        const khoaHocTheoDanhMuc = filterKhoaHocTheoDanhMuc(danhMucKhoaHoc, danhSachKhoaHoc);
 
         return responsesHelper(200, "Xử lý thành công", khoaHocTheoDanhMuc);
     }
     const danhMucKhoaHoc = await DanhMucKhoaHocModel.findById(maDanhMuc).select("-createdAt -updatedAt -__v");
-    
+
     const danhSachKhoaHoc = await KhoaHocModel.find({ danhMucKhoaHoc_ID: maDanhMuc }).populate("danhMucKhoaHoc_ID", "tenDanhMuc").select("hinhAnh tenKhoaHoc");
-    
-    const khoaHocTheoDanhMuc = filterKhoaHocTheoDanhMuc([danhMucKhoaHoc], danhSachKhoaHoc)
+
+    const khoaHocTheoDanhMuc = filterKhoaHocTheoDanhMuc([danhMucKhoaHoc], danhSachKhoaHoc);
 
     // await wait(3000)
 
@@ -199,15 +201,15 @@ const capNhatKhoaHoc = async (file, maKhoaHoc, tenKhoaHoc, moTa, giaTien, danhMu
 const xoaKhoaHoc = async (maKhoaHoc) => {
     if (!maKhoaHoc) return responsesHelper(400, "Thiếu maKhoaHoc khoá học");
 
-     // Kiểm tra maKhoaHoc có tồn tại khoá học không
-     const khoaHocDb = await KhoaHocModel.findById(maKhoaHoc);
-     if (!khoaHocDb) return responsesHelper(400, "Xử lý không thành công", `Khoá học không tồn tại`);
+    // Kiểm tra maKhoaHoc có tồn tại khoá học không
+    const khoaHocDb = await KhoaHocModel.findById(maKhoaHoc);
+    if (!khoaHocDb) return responsesHelper(400, "Xử lý không thành công", `Khoá học không tồn tại`);
 
     // tìm và xoá khoá học
     const deletedKhoaHoc = await KhoaHocModel.findByIdAndDelete(khoaHocDb._id).select("-createdAt -updatedAt -__v");
 
     // xóa tất cả các documents có khoaHoc_ID
-    await DangKyKhoaHocModel.deleteMany({ khoaHoc_ID: deletedKhoaHoc._id })
+    await DangKyKhoaHocModel.deleteMany({ khoaHoc_ID: deletedKhoaHoc._id });
 
     // xoá ảnh cũ
     await deleteImg(deletedKhoaHoc.tenHinhAnh);
@@ -240,6 +242,55 @@ const huyDangKyKhoaHoc = async (maKhoaHoc, user) => {
     return responsesHelper(200, "Xử lý thành công", deleteDangKyKhoaHoc);
 };
 
+const layThongTinNguoiDungChoKhoaHoc = async (idKhoaHoc) => {
+    if (!idKhoaHoc) return responsesHelper(400, "Thiếu idNguoiDung tài khoản");
+
+    const khoaHoc = await KhoaHocModel.findById(idKhoaHoc).select("hinhAnh tenKhoaHoc");
+    if (!khoaHoc) return responsesHelper(400, "Xử lý không thành công", `Khoá học không tồn tại`);
+
+    // LỌC NGƯỜI DÙNG ĐÃ ĐĂNG KÝ =================================================================
+    let nguoiDungDaDangKy = changeObj(
+        await DangKyKhoaHocModel.find({ khoaHoc_ID: khoaHoc._id })
+            .select("-__v -updatedAt -createdAt -user_ID")
+            .populate("user_ID", "taiKhoan hoTen soDt email avatar maLoaiNguoiDung")
+    );
+    nguoiDungDaDangKy = nguoiDungDaDangKy.map((nguoiDung) => {
+        return { ...nguoiDung.user_ID };
+    });
+
+    // LỌC NGƯỜI DÙNG CHƯA ĐĂNG KÝ ===============================================================
+    const arrIdNguoiDungDaDangKy = nguoiDungDaDangKy.map((nguoiDung) => nguoiDung._id);
+
+    // từ mảng các id chứa khoá học đã đăng ký: arrIdKhoaHocDaDangKy
+    // tìm kiếm trong UserModel những documents không có trong arrIdKhoaHocDaDangKy
+    const nguoiDungChuaDangKy = await UserModel.find({ _id: { $nin: arrIdNguoiDungDaDangKy } }).select("taiKhoan hoTen soDt email avatar maLoaiNguoiDung");
+
+    const result = {
+        khoaHoc,
+        nguoiDungDaDangKy,
+        nguoiDungChuaDangKy,
+    };
+    return responsesHelper(200, "Xử lý thành công", result);
+};
+
+const huyDangKyNguoiDungChoKhoaHoc = async (idNguoiDung, idKhoaHoc) => {
+    if (!idNguoiDung) return responsesHelper(400, "Thiếu idNguoiDung");
+    if (!idKhoaHoc) return responsesHelper(400, "Thiếu idKhoaHoc");
+
+    const result = await DangKyKhoaHocModel.deleteMany({ khoaHoc_ID: idKhoaHoc, user_ID: idNguoiDung });
+
+    return responsesHelper(200, "Xử lý thành công", result);
+};
+
+const dangKyNguoiDungChoKhoaHoc = async (idNguoiDung, idKhoaHoc) => {
+    if (!idNguoiDung) return responsesHelper(400, "Thiếu idNguoiDung");
+    if (!idKhoaHoc) return responsesHelper(400, "Thiếu idKhoaHoc");
+
+    const result = await DangKyKhoaHocModel.create({ khoaHoc_ID: idKhoaHoc, user_ID: idNguoiDung });
+
+    return responsesHelper(200, "Xử lý thành công", result);
+};
+
 module.exports = {
     layDanhSachKhoaHoc,
     themDanhMucKhoaHoc,
@@ -251,4 +302,7 @@ module.exports = {
     dangKyKhoaHoc,
     huyDangKyKhoaHoc,
     layKhoaHocTheoDanhMuc,
+    layThongTinNguoiDungChoKhoaHoc,
+    huyDangKyNguoiDungChoKhoaHoc,
+    dangKyNguoiDungChoKhoaHoc,
 };

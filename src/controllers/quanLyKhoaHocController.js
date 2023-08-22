@@ -120,6 +120,42 @@ const huyDangKyKhoaHoc = async (req, res, next) => {
     }
 };
 
+const layThongTinNguoiDungChoKhoaHoc = async (req, res, next) => {
+    try {
+        const idKhoaHoc = req.query.idKhoaHoc;
+
+        const result = await quanLyKhoaHocService.layThongTinNguoiDungChoKhoaHoc(idKhoaHoc);
+
+        res.status(result.code).json(result);
+    } catch (error) {
+        next(error);
+    }
+};
+
+const huyDangKyNguoiDungChoKhoaHoc = async (req, res, next) => {
+    try {
+        const { idNguoiDung, idKhoaHoc } = req.body;
+
+        const result = await quanLyKhoaHocService.huyDangKyNguoiDungChoKhoaHoc(idNguoiDung, idKhoaHoc);
+
+        res.status(result.code).json(result);
+    } catch (error) {
+        next(error);
+    }
+};
+
+const dangKyNguoiDungChoKhoaHoc = async (req, res, next) => {
+    try {
+        const { idNguoiDung, idKhoaHoc } = req.body;
+
+        const result = await quanLyKhoaHocService.dangKyNguoiDungChoKhoaHoc(idNguoiDung, idKhoaHoc);
+
+        res.status(result.code).json(result);
+    } catch (error) {
+        next(error);
+    }
+};
+
 module.exports = {
     layDanhSachKhoaHoc,
     themDanhMucKhoaHoc,
@@ -130,5 +166,8 @@ module.exports = {
     layDanhMucKhoaHoc,
     dangKyKhoaHoc,
     huyDangKyKhoaHoc,
-    layKhoaHocTheoDanhMuc
+    layKhoaHocTheoDanhMuc,
+    layThongTinNguoiDungChoKhoaHoc,
+    huyDangKyNguoiDungChoKhoaHoc,
+    dangKyNguoiDungChoKhoaHoc,
 };
