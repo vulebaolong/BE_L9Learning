@@ -62,7 +62,10 @@ const layDanhMucKhoaHoc = async () => {
 };
 
 const themDanhMucKhoaHoc = async (tenDanhMuc) => {
+    if (!tenDanhMuc) return responsesHelper(400, "Thiếu tenDanhMuc");
+
     const danhMucKhoaHoc = await DanhMucKhoaHocModel.create(tenDanhMuc);
+
     return responsesHelper(200, "Xử lý thành công", danhMucKhoaHoc);
 };
 

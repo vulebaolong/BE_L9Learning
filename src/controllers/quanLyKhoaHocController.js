@@ -48,7 +48,7 @@ const layDanhMucKhoaHoc = async (req, res, next) => {
 
 const themDanhMucKhoaHoc = async (req, res, next) => {
     try {
-        const tenDanhMuc = req.body;
+        const tenDanhMuc = req.body.tenDanhMuc;
 
         const result = await quanLyKhoaHocService.themDanhMucKhoaHoc(tenDanhMuc);
 
