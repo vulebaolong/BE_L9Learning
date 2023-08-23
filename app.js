@@ -31,26 +31,26 @@ app.use(cors());
 
 //  ===============MIDLEWARAE =========================
 // bảo vệ cho phép tài nguyên trong ứng dụng của bạn được truy cập từ các nguồn gốc khác nhau
-app.use(
-  helmet({
-      contentSecurityPolicy: true,
-      crossOriginResourcePolicy: { policy: "cross-origin" },
-  })
-);
+// app.use(
+//   helmet({
+//       contentSecurityPolicy: true,
+//       crossOriginResourcePolicy: { policy: "cross-origin" },
+//   })
+// );
 
 // limit giới hạn tần suất các yêu cầu (requests) từ một địa chỉ IP cụ thể
-const limiter = () => {
-  const { result } = responsesHelper(429, "Quá nhiều yêu cầu, vui lòng thử lại sau.");
-  return rateLimit({
-      windowMs: 1000, // 2 giây Thời gian cửa sổ (ms)
-      max: 10, // Số lượng yêu cầu tối đa trong cửa sổ thời gian
-      message: result, // Thông báo lỗi khi vượt quá giới hạn
-  });
-};
-app.use("/api", limiter());
+// const limiter = () => {
+//   const { result } = responsesHelper(429, "Quá nhiều yêu cầu, vui lòng thử lại sau.");
+//   return rateLimit({
+//       windowMs: 1000, // 2 giây Thời gian cửa sổ (ms)
+//       max: 10, // Số lượng yêu cầu tối đa trong cửa sổ thời gian
+//       message: result, // Thông báo lỗi khi vượt quá giới hạn
+//   });
+// };
+// app.use("/api", limiter());
 
 // ngăn chặn các cuộc tấn công NoSQL Injection vào MongoDB khi sử dụng Mongoose
-app.use(mongoSanitize());
+// app.use(mongoSanitize());
 
 // nén (compress) các tài nguyên HTTP trước khi gửi từ máy chủ (server) tới trình duyệt (browser)
 app.use(compression());
