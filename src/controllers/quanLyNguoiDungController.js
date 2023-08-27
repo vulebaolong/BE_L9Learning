@@ -1,10 +1,10 @@
 const quanLyNguoiDungService = require("../services/quanLyNguoiDungService");
 
-const dangKy = async (req, res, next) => {
+const register = async (req, res, next) => {
     try {
         const { taiKhoan, matKhau, email, soDt, hoTen } = req.body;
 
-        const result = await quanLyNguoiDungService.dangKy(taiKhoan, matKhau, email, soDt, hoTen);
+        const result = await quanLyNguoiDungService.register(taiKhoan, matKhau, email, soDt, hoTen);
 
         res.status(result.code).json(result);
     } catch (error) {
@@ -12,11 +12,11 @@ const dangKy = async (req, res, next) => {
     }
 };
 
-const dangNhap = async (req, res, next) => {
+const login = async (req, res, next) => {
     try {
         const { taiKhoan, matKhau } = req.body;
 
-        const result = await quanLyNguoiDungService.dangNhap(taiKhoan, matKhau);
+        const result = await quanLyNguoiDungService.login(taiKhoan, matKhau);
 
         res.status(result.code).json(result);
     } catch (error) {
@@ -24,12 +24,12 @@ const dangNhap = async (req, res, next) => {
     }
 };
 
-const capNhatThongTinTaiKhoan = async (req, res, next) => {
+const updateAccountInfo = async (req, res, next) => {
     try {
         const user = req.user;
         const { email, hoTen, maLoaiNguoiDung, soDt, taiKhoan } = req.body;
 
-        const result = await quanLyNguoiDungService.capNhatThongTinTaiKhoan(email, hoTen, maLoaiNguoiDung, soDt, taiKhoan, user);
+        const result = await quanLyNguoiDungService.updateAccountInfo(email, hoTen, maLoaiNguoiDung, soDt, taiKhoan, user);
 
         res.status(result.code).json(result);
     } catch (error) {
@@ -37,11 +37,11 @@ const capNhatThongTinTaiKhoan = async (req, res, next) => {
     }
 };
 
-const capNhatMotThongTinTaiKhoan = async (req, res, next) => {
+const updateOneAccountInfo = async (req, res, next) => {
     try {
         const user = req.user;
 
-        const result = await quanLyNguoiDungService.capNhatMotThongTinTaiKhoan(req.body, user);
+        const result = await quanLyNguoiDungService.updateOneAccountInfo(req.body, user);
 
         res.status(result.code).json(result);
     } catch (error) {
@@ -49,13 +49,13 @@ const capNhatMotThongTinTaiKhoan = async (req, res, next) => {
     }
 };
 
-const capNhatMatKhau = async (req, res, next) => {
+const updatePassword = async (req, res, next) => {
     try {
         const user = req.user;
 
-        const { matKhauCurent, matKhauNew } = req.body;
+        const { currentPassword, newPassword } = req.body;
 
-        const result = await quanLyNguoiDungService.capNhatMatKhau(matKhauCurent, matKhauNew, user);
+        const result = await quanLyNguoiDungService.updatePassword(currentPassword, newPassword, user);
 
         res.status(result.code).json(result);
     } catch (error) {
@@ -63,11 +63,11 @@ const capNhatMatKhau = async (req, res, next) => {
     }
 };
 
-const thongTinTaiKhoan = async (req, res, next) => {
+const getAccountInfo = async (req, res, next) => {
     try {
         const user = req.user;
 
-        const result = await quanLyNguoiDungService.thongTinTaiKhoan(user);
+        const result = await quanLyNguoiDungService.getAccountInfo(user);
 
         res.status(result.code).json(result);
     } catch (error) {
@@ -75,11 +75,11 @@ const thongTinTaiKhoan = async (req, res, next) => {
     }
 };
 
-const capNhatAvatarTaiKhoan = async (req, res, next) => {
+const updateAccountAvatar = async (req, res, next) => {
     try {
         const user = req.user;
 
-        const result = await quanLyNguoiDungService.capNhatAvatarTaiKhoan(req.file, user);
+        const result = await quanLyNguoiDungService.updateAccountAvatar(req.file, user);
 
         res.status(result.code).json(result);
     } catch (error) {
@@ -87,11 +87,11 @@ const capNhatAvatarTaiKhoan = async (req, res, next) => {
     }
 };
 
-const capNhatAvatarNguoiDung = async (req, res, next) => {
+const updateUserAvatar = async (req, res, next) => {
     try {
-        const idNguoiDung = req.body.idNguoiDung;
+        const userId = req.body.userId;
 
-        const result = await quanLyNguoiDungService.capNhatAvatarNguoiDung(req.file, idNguoiDung);
+        const result = await quanLyNguoiDungService.updateUserAvatar(req.file, userId);
 
         res.status(result.code).json(result);
     } catch (error) {
@@ -99,11 +99,11 @@ const capNhatAvatarNguoiDung = async (req, res, next) => {
     }
 };
 
-const layDanhSachNguoiDung = async (req, res, next) => {
+const getListUsers = async (req, res, next) => {
     try {
         const tenNguoiDung = req.query.tenNguoiDung;
 
-        const result = await quanLyNguoiDungService.layDanhSachNguoiDung(tenNguoiDung);
+        const result = await quanLyNguoiDungService.getListUsers(tenNguoiDung);
 
         res.status(result.code).json(result);
     } catch (error) {
@@ -111,11 +111,11 @@ const layDanhSachNguoiDung = async (req, res, next) => {
     }
 };
 
-const layThongTinNguoiDung = async (req, res, next) => {
+const getUserInfo = async (req, res, next) => {
     try {
-        const idNguoiDung = req.query.idNguoiDung;
+        const userId = req.query.userId;
 
-        const result = await quanLyNguoiDungService.layThongTinNguoiDung(idNguoiDung);
+        const result = await quanLyNguoiDungService.getUserInfo(userId);
 
         res.status(result.code).json(result);
     } catch (error) {
@@ -123,11 +123,11 @@ const layThongTinNguoiDung = async (req, res, next) => {
     }
 };
 
-const capNhatMotThongTinNguoiDung = async (req, res, next) => {
+const updateOneUserInfo = async (req, res, next) => {
     try {
         const thongTin = req.body;
 
-        const result = await quanLyNguoiDungService.capNhatMotThongTinNguoiDung(thongTin);
+        const result = await quanLyNguoiDungService.updateOneUserInfo(thongTin);
 
         res.status(result.code).json(result);
     } catch (error) {
@@ -135,11 +135,11 @@ const capNhatMotThongTinNguoiDung = async (req, res, next) => {
     }
 };
 
-const xoaNguoiDung = async (req, res, next) => {
+const deleteUser = async (req, res, next) => {
     try {
-        const idNguoiDung = req.query.idNguoiDung;
+        const userId = req.query.userId;
 
-        const result = await quanLyNguoiDungService.xoaNguoiDung(idNguoiDung);
+        const result = await quanLyNguoiDungService.deleteUser(userId);
 
         res.status(result.code).json(result);
     } catch (error) {
@@ -147,11 +147,11 @@ const xoaNguoiDung = async (req, res, next) => {
     }
 };
 
-const layThongTinKhoaHocChoNguoiDung = async (req, res, next) => {
+const getCoursesInfoForUsser = async (req, res, next) => {
     try {
-        const idNguoiDung = req.query.idNguoiDung;
+        const userId = req.query.userId;
 
-        const result = await quanLyNguoiDungService.layThongTinKhoaHocChoNguoiDung(idNguoiDung);
+        const result = await quanLyNguoiDungService.getCoursesInfoForUsser(userId);
 
         res.status(result.code).json(result);
     } catch (error) {
@@ -159,11 +159,11 @@ const layThongTinKhoaHocChoNguoiDung = async (req, res, next) => {
     }
 };
 
-const huyDangKyKhoaHocChoNguoiDung = async (req, res, next) => {
+const cancelCourseEnrollmentForUser = async (req, res, next) => {
     try {
-        const { idNguoiDung, idKhoaHoc } = req.body;
+        const { userId, courseId } = req.body;
 
-        const result = await quanLyNguoiDungService.huyDangKyKhoaHocChoNguoiDung(idNguoiDung, idKhoaHoc);
+        const result = await quanLyNguoiDungService.cancelCourseEnrollmentForUser(userId, courseId);
 
         res.status(result.code).json(result);
     } catch (error) {
@@ -171,11 +171,11 @@ const huyDangKyKhoaHocChoNguoiDung = async (req, res, next) => {
     }
 };
 
-const dangKyKhoaHocChoNguoiDung = async (req, res, next) => {
+const enrollCourseForUser = async (req, res, next) => {
     try {
-        const { idNguoiDung, idKhoaHoc } = req.body;
+        const { userId, courseId } = req.body;
 
-        const result = await quanLyNguoiDungService.dangKyKhoaHocChoNguoiDung(idNguoiDung, idKhoaHoc);
+        const result = await quanLyNguoiDungService.enrollCourseForUser(userId, courseId);
 
         res.status(result.code).json(result);
     } catch (error) {
@@ -184,19 +184,19 @@ const dangKyKhoaHocChoNguoiDung = async (req, res, next) => {
 };
 
 module.exports = {
-    dangKy,
-    dangNhap,
-    thongTinTaiKhoan,
-    capNhatThongTinTaiKhoan,
-    capNhatMotThongTinTaiKhoan,
-    capNhatMatKhau,
-    capNhatAvatarTaiKhoan,
-    layDanhSachNguoiDung,
-    layThongTinNguoiDung,
-    capNhatMotThongTinNguoiDung,
-    xoaNguoiDung,
-    capNhatAvatarNguoiDung,
-    layThongTinKhoaHocChoNguoiDung,
-    huyDangKyKhoaHocChoNguoiDung,
-    dangKyKhoaHocChoNguoiDung,
+    register,
+    login,
+    getAccountInfo,
+    updateAccountInfo,
+    updateOneAccountInfo,
+    updatePassword,
+    updateAccountAvatar,
+    getListUsers,
+    getUserInfo,
+    updateOneUserInfo,
+    deleteUser,
+    updateUserAvatar,
+    getCoursesInfoForUsser,
+    cancelCourseEnrollmentForUser,
+    enrollCourseForUser,
 };

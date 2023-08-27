@@ -14,8 +14,8 @@ router.get("/welcome", (req, res) => {
     res.status(200).json("Welcome Api L9_learning vulebaolong");
 });
 
-router.use("/QuanLyNguoiDung", quanLyNguoiDungRouter);
-router.use("/QuanLyKhoaHoc", quanLyKhoaHocRouter);
+router.use("/UserManagement", quanLyNguoiDungRouter);
+router.use("/CourseManagement", quanLyKhoaHocRouter);
 
 
 //xử lý các URL người dùng sử dụng không đúng

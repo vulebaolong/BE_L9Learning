@@ -2,7 +2,7 @@ const mongoose = require("mongoose");
 
 const khoaHocSchema = new mongoose.Schema(
     {
-        tenKhoaHoc: { type: String, unique: true, trim: true },
+        courseName: { type: String, unique: true, trim: true },
         moTa: { type: String, trim: true },
         ngayTao: { type: String, trim: true },
         danhMucKhoaHoc_ID: { type: mongoose.Schema.Types.ObjectId, ref: "danhMucKhoaHoc" },
@@ -20,7 +20,7 @@ const khoaHocSchema = new mongoose.Schema(
     }
 );
 
-khoaHocSchema.index({ tenKhoaHoc: 'text' });
+khoaHocSchema.index({ courseName: 'text' });
 
 // Tạo model User dựa trên schema đã định nghĩa
 const KhoaHocModel = mongoose.model("khoaHoc", khoaHocSchema);

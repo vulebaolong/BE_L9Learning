@@ -4,15 +4,15 @@ const DanhMucKhoaHocModel = require("../models/danhMucKhoaHoc");
 const KhoaHocModel = require("../models/khoaHocModel");
 const youtubeHelper = require("../helpers/youtubeHelper");
 const isFileValidHelper = require("../helpers/isFileValidHelper");
-const DangKyKhoaHocModel = require("../models/dangKyKhoaHoc");
+const EnrollCourseModel = require("../models/enrollCourse");
 const _ = require("lodash");
 const wait = require("../helpers/waitHelper");
 const filterKhoaHocTheoDanhMuc = require("../helpers/khoaHocHelper");
 const UserModel = require("../models/userModel");
 const changeObj = require("../helpers/changeObjHelper");
 
-const layDanhSachKhoaHoc = async (tenKhoaHoc) => {
-    if (!tenKhoaHoc) {
+const layDanhSachKhoaHoc = async (courseName) => {
+    if (!courseName) {
         const khoaHocs = await KhoaHocModel.find().populate("danhMucKhoaHoc_ID").select("-createdAt -updatedAt -__v");
 
         // await wait(3000)
@@ -20,9 +20,9 @@ const layDanhSachKhoaHoc = async (tenKhoaHoc) => {
         return responsesHelper(200, "Xử lý thành công", khoaHocs);
     }
 
-    const fuzzySearchQuery = _.escapeRegExp(tenKhoaHoc);
+    const fuzzySearchQuery = _.escapeRegExp(courseName);
 
-    const khoaHoc = await KhoaHocModel.find({ tenKhoaHoc: { $regex: fuzzySearchQuery, $options: "i" } }).select("tenKhoaHoc hinhAnh");
+    const khoaHoc = await KhoaHocModel.find({ courseName: { $regex: fuzzySearchQuery, $options: "i" } }).select("courseName hinhAnh");
 
     return responsesHelper(200, "Xử lý thành công", khoaHoc);
 };
@@ -35,19 +35,19 @@ const layMotKhoaHoc = async (id) => {
     return responsesHelper(200, "Xử lý thành công", khoaHoc);
 };
 
-const layKhoaHocTheoDanhMuc = async (maDanhMuc) => {
-    if (!maDanhMuc) {
+const getCourseByCategory = async (courseCategoryCode) => {
+    if (!courseCategoryCode) {
         const danhMucKhoaHoc = await DanhMucKhoaHocModel.find().select("-createdAt -updatedAt -__v");
 
-        const danhSachKhoaHoc = await KhoaHocModel.find().populate("danhMucKhoaHoc_ID", "tenDanhMuc").select("hinhAnh tenKhoaHoc");
+        const danhSachKhoaHoc = await KhoaHocModel.find().populate("danhMucKhoaHoc_ID", "tenDanhMuc").select("hinhAnh courseName");
 
         const khoaHocTheoDanhMuc = filterKhoaHocTheoDanhMuc(danhMucKhoaHoc, danhSachKhoaHoc);
 
         return responsesHelper(200, "Xử lý thành công", khoaHocTheoDanhMuc);
     }
-    const danhMucKhoaHoc = await DanhMucKhoaHocModel.findById(maDanhMuc).select("-createdAt -updatedAt -__v");
+    const danhMucKhoaHoc = await DanhMucKhoaHocModel.findById(courseCategoryCode).select("-createdAt -updatedAt -__v");
 
-    const danhSachKhoaHoc = await KhoaHocModel.find({ danhMucKhoaHoc_ID: maDanhMuc }).populate("danhMucKhoaHoc_ID", "tenDanhMuc").select("hinhAnh tenKhoaHoc");
+    const danhSachKhoaHoc = await KhoaHocModel.find({ danhMucKhoaHoc_ID: courseCategoryCode }).populate("danhMucKhoaHoc_ID", "tenDanhMuc").select("hinhAnh courseName");
 
     const khoaHocTheoDanhMuc = filterKhoaHocTheoDanhMuc([danhMucKhoaHoc], danhSachKhoaHoc);
 
@@ -56,7 +56,7 @@ const layKhoaHocTheoDanhMuc = async (maDanhMuc) => {
     return responsesHelper(200, "Xử lý thành công", khoaHocTheoDanhMuc);
 };
 
-const layDanhMucKhoaHoc = async () => {
+const getListCourseCategories = async () => {
     const danhMucKhoaHoc = await DanhMucKhoaHocModel.find().select("-createdAt -updatedAt -__v");
     return responsesHelper(200, "Xử lý thành công", danhMucKhoaHoc);
 };
@@ -69,8 +69,8 @@ const themDanhMucKhoaHoc = async (tenDanhMuc) => {
     return responsesHelper(200, "Xử lý thành công", danhMucKhoaHoc);
 };
 
-const themKhoaHoc = async (file, tenKhoaHoc, moTa, giaTien, danhMucKhoaHoc_ID, seHocDuoc, chuongHoc) => {
-    if (!tenKhoaHoc) return responsesHelper(400, "Thiếu tên khoá học");
+const addCourse = async (file, courseName, moTa, giaTien, danhMucKhoaHoc_ID, seHocDuoc, chuongHoc) => {
+    if (!courseName) return responsesHelper(400, "Thiếu tên khoá học");
     if (!moTa) return responsesHelper(400, "Thiếu mô tả");
     if (!giaTien) return responsesHelper(400, "Thiếu giá tiền");
     if (!danhMucKhoaHoc_ID) return responsesHelper(400, "Thiếu danh mục khoá học");
@@ -104,13 +104,13 @@ const themKhoaHoc = async (file, tenKhoaHoc, moTa, giaTien, danhMucKhoaHoc_ID, s
 
     chuongHoc = await fetchChuongHocData(chuongHoc);
 
-    const exitMove = await KhoaHocModel.findOne({ tenKhoaHoc });
+    const exitMove = await KhoaHocModel.findOne({ courseName });
     if (exitMove) return responsesHelper(400, "Khoá học đã tồn tại");
 
     const objHinhAnh = await uploadImg(file, "khoaHoc");
 
     const khoaHoc = await KhoaHocModel.create({
-        tenKhoaHoc,
+        courseName,
         moTa,
         giaTien,
         danhMucKhoaHoc_ID,
@@ -125,16 +125,16 @@ const themKhoaHoc = async (file, tenKhoaHoc, moTa, giaTien, danhMucKhoaHoc_ID, s
     return responsesHelper(200, "Xử lý thành công", khoaHoc);
 };
 
-const capNhatKhoaHoc = async (file, maKhoaHoc, tenKhoaHoc, moTa, giaTien, danhMucKhoaHoc_ID, seHocDuoc, chuongHoc) => {
-    if (!tenKhoaHoc) return responsesHelper(400, "Thiếu tên khoá học");
+const updateCourse = async (file, courseCode, courseName, moTa, giaTien, danhMucKhoaHoc_ID, seHocDuoc, chuongHoc) => {
+    if (!courseName) return responsesHelper(400, "Thiếu tên khoá học");
     if (!moTa) return responsesHelper(400, "Thiếu mô tả");
     if (!giaTien) return responsesHelper(400, "Thiếu giá tiền");
     if (!danhMucKhoaHoc_ID) return responsesHelper(400, "Thiếu danh mục khoá học");
     if (!seHocDuoc) return responsesHelper(400, "Thiếu sẽ học được gì");
     if (!chuongHoc) return responsesHelper(400, "Thiếu chương học");
-    if (!maKhoaHoc) return responsesHelper(400, "Thiếu mã khoá học");
-    const khoaHoc = await KhoaHocModel.findById(maKhoaHoc);
-    if (!khoaHoc) return responsesHelper(400, "Xử lý không thành công", `Tên khoá học: ${tenKhoaHoc} không tồn tại`);
+    if (!courseCode) return responsesHelper(400, "Thiếu mã khoá học");
+    const khoaHoc = await KhoaHocModel.findById(courseCode);
+    if (!khoaHoc) return responsesHelper(400, "Xử lý không thành công", `Tên khoá học: ${courseName} không tồn tại`);
 
     giaTien = +giaTien;
     chuongHoc = JSON.parse(chuongHoc);
@@ -182,9 +182,9 @@ const capNhatKhoaHoc = async (file, maKhoaHoc, tenKhoaHoc, moTa, giaTien, danhMu
 
     // update phim
     const khoaHocUpdate = await KhoaHocModel.findByIdAndUpdate(
-        maKhoaHoc,
+        courseCode,
         {
-            tenKhoaHoc,
+            courseName,
             moTa,
             giaTien,
             danhMucKhoaHoc_ID,
@@ -201,18 +201,18 @@ const capNhatKhoaHoc = async (file, maKhoaHoc, tenKhoaHoc, moTa, giaTien, danhMu
     return responsesHelper(200, "Xử lý thành công", khoaHocUpdate);
 };
 
-const xoaKhoaHoc = async (maKhoaHoc) => {
-    if (!maKhoaHoc) return responsesHelper(400, "Thiếu maKhoaHoc khoá học");
+const deleteCourse = async (courseCode) => {
+    if (!courseCode) return responsesHelper(400, "Thiếu courseCode khoá học");
 
-    // Kiểm tra maKhoaHoc có tồn tại khoá học không
-    const khoaHocDb = await KhoaHocModel.findById(maKhoaHoc);
+    // Kiểm tra courseCode có tồn tại khoá học không
+    const khoaHocDb = await KhoaHocModel.findById(courseCode);
     if (!khoaHocDb) return responsesHelper(400, "Xử lý không thành công", `Khoá học không tồn tại`);
 
     // tìm và xoá khoá học
     const deletedKhoaHoc = await KhoaHocModel.findByIdAndDelete(khoaHocDb._id).select("-createdAt -updatedAt -__v");
 
     // xóa tất cả các documents có khoaHoc_ID
-    await DangKyKhoaHocModel.deleteMany({ khoaHoc_ID: deletedKhoaHoc._id });
+    await EnrollCourseModel.deleteMany({ khoaHoc_ID: deletedKhoaHoc._id });
 
     // xoá ảnh cũ
     await deleteImg(deletedKhoaHoc.tenHinhAnh);
@@ -220,40 +220,40 @@ const xoaKhoaHoc = async (maKhoaHoc) => {
     return responsesHelper(200, "Xử lý thành công", deletedKhoaHoc);
 };
 
-const dangKyKhoaHoc = async (maKhoaHoc, user) => {
-    if (!maKhoaHoc) return responsesHelper(400, "Thiếu maKhoaHoc mã khoá học");
+const enrollCourse = async (courseCode, user) => {
+    if (!courseCode) return responsesHelper(400, "Thiếu courseCode mã khoá học");
 
-    const exitDangKyKhoaHoc = await DangKyKhoaHocModel.findOne({ khoaHoc_ID: maKhoaHoc, user_ID: user.id });
+    const exitDangKyKhoaHoc = await EnrollCourseModel.findOne({ khoaHoc_ID: courseCode, user_ID: user.id });
     if (exitDangKyKhoaHoc) return responsesHelper(400, "Khoá học này đã được đăng ký");
 
-    const dangKyKhoaHoc = await DangKyKhoaHocModel.create({ khoaHoc_ID: maKhoaHoc, user_ID: user.id });
+    const enrollCourse = await EnrollCourseModel.create({ khoaHoc_ID: courseCode, user_ID: user.id });
 
     // await wait(3000);
 
-    return responsesHelper(200, "Xử lý thành công", dangKyKhoaHoc);
+    return responsesHelper(200, "Xử lý thành công", enrollCourse);
 };
 
-const huyDangKyKhoaHoc = async (maKhoaHoc, user) => {
-    if (!maKhoaHoc) return responsesHelper(400, "Thiếu maKhoaHoc mã khoá học");
+const cancelEnrollment = async (courseCode, user) => {
+    if (!courseCode) return responsesHelper(400, "Thiếu courseCode mã khoá học");
 
-    const deleteDangKyKhoaHoc = await DangKyKhoaHocModel.findOneAndDelete({ khoaHoc_ID: maKhoaHoc, user_ID: user.id });
+    const deleteDangKyKhoaHoc = await EnrollCourseModel.findOneAndDelete({ khoaHoc_ID: courseCode, user_ID: user.id });
     // if (exitDangKyKhoaHoc) return responsesHelper(400, "Khoá học này đã được đăng ký");
 
-    // const dangKyKhoaHoc = await DangKyKhoaHocModel.create({ khoaHoc_ID: maKhoaHoc, user_ID: user.id });
+    // const enrollCourse = await EnrollCourseModel.create({ khoaHoc_ID: courseCode, user_ID: user.id });
     // await wait(3000);
 
     return responsesHelper(200, "Xử lý thành công", deleteDangKyKhoaHoc);
 };
 
-const layThongTinNguoiDungChoKhoaHoc = async (idKhoaHoc) => {
-    if (!idKhoaHoc) return responsesHelper(400, "Thiếu idNguoiDung tài khoản");
+const getUserInformationForCourse = async (courseId) => {
+    if (!courseId) return responsesHelper(400, "Thiếu userId tài khoản");
 
-    const khoaHoc = await KhoaHocModel.findById(idKhoaHoc).select("hinhAnh tenKhoaHoc");
+    const khoaHoc = await KhoaHocModel.findById(courseId).select("hinhAnh courseName");
     if (!khoaHoc) return responsesHelper(400, "Xử lý không thành công", `Khoá học không tồn tại`);
 
     // LỌC NGƯỜI DÙNG ĐÃ ĐĂNG KÝ =================================================================
     let nguoiDungDaDangKy = changeObj(
-        await DangKyKhoaHocModel.find({ khoaHoc_ID: khoaHoc._id })
+        await EnrollCourseModel.find({ khoaHoc_ID: khoaHoc._id })
             .select("-__v -updatedAt -createdAt -user_ID")
             .populate("user_ID", "taiKhoan hoTen soDt email avatar maLoaiNguoiDung")
     );
@@ -276,20 +276,20 @@ const layThongTinNguoiDungChoKhoaHoc = async (idKhoaHoc) => {
     return responsesHelper(200, "Xử lý thành công", result);
 };
 
-const huyDangKyNguoiDungChoKhoaHoc = async (idNguoiDung, idKhoaHoc) => {
-    if (!idNguoiDung) return responsesHelper(400, "Thiếu idNguoiDung");
-    if (!idKhoaHoc) return responsesHelper(400, "Thiếu idKhoaHoc");
+const cancelUserEnrollmentForCourse = async (userId, courseId) => {
+    if (!userId) return responsesHelper(400, "Thiếu userId");
+    if (!courseId) return responsesHelper(400, "Thiếu courseId");
 
-    const result = await DangKyKhoaHocModel.deleteMany({ khoaHoc_ID: idKhoaHoc, user_ID: idNguoiDung });
+    const result = await EnrollCourseModel.deleteMany({ khoaHoc_ID: courseId, user_ID: userId });
 
     return responsesHelper(200, "Xử lý thành công", result);
 };
 
-const dangKyNguoiDungChoKhoaHoc = async (idNguoiDung, idKhoaHoc) => {
-    if (!idNguoiDung) return responsesHelper(400, "Thiếu idNguoiDung");
-    if (!idKhoaHoc) return responsesHelper(400, "Thiếu idKhoaHoc");
+const enrollUserForCourse = async (userId, courseId) => {
+    if (!userId) return responsesHelper(400, "Thiếu userId");
+    if (!courseId) return responsesHelper(400, "Thiếu courseId");
 
-    const result = await DangKyKhoaHocModel.create({ khoaHoc_ID: idKhoaHoc, user_ID: idNguoiDung });
+    const result = await EnrollCourseModel.create({ khoaHoc_ID: courseId, user_ID: userId });
 
     return responsesHelper(200, "Xử lý thành công", result);
 };
@@ -297,15 +297,15 @@ const dangKyNguoiDungChoKhoaHoc = async (idNguoiDung, idKhoaHoc) => {
 module.exports = {
     layDanhSachKhoaHoc,
     themDanhMucKhoaHoc,
-    themKhoaHoc,
+    addCourse,
     layMotKhoaHoc,
-    xoaKhoaHoc,
-    capNhatKhoaHoc,
-    layDanhMucKhoaHoc,
-    dangKyKhoaHoc,
-    huyDangKyKhoaHoc,
-    layKhoaHocTheoDanhMuc,
-    layThongTinNguoiDungChoKhoaHoc,
-    huyDangKyNguoiDungChoKhoaHoc,
-    dangKyNguoiDungChoKhoaHoc,
+    deleteCourse,
+    updateCourse,
+    getListCourseCategories,
+    enrollCourse,
+    cancelEnrollment,
+    getCourseByCategory,
+    getUserInformationForCourse,
+    cancelUserEnrollmentForCourse,
+    enrollUserForCourse,
 };
