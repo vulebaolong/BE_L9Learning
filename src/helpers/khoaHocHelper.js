@@ -1,15 +1,15 @@
-const filterKhoaHocTheoDanhMuc = (courseCategory, danhSachKhoaHoc) => {
-    let khoaHocTheoDanhMuc = courseCategory.map((danhMuc) => {
+const filterCoursesByCategory = (courseCategories, courseList) => {
+    let coursesByCategory = courseCategories.map((category) => {
         return {
-            categoryName: danhMuc.categoryName,
-            khoaHocDanhMuc: danhSachKhoaHoc.filter((course) => {
-                return course.courseCategory_ID.categoryName === danhMuc.categoryName;
+            categoryName: category.categoryName,
+            coursesInCategory: courseList.filter((course) => {
+                return course.courseCategory_ID.categoryName === category.categoryName;
             }),
         };
     });
 
-    khoaHocTheoDanhMuc = khoaHocTheoDanhMuc.filter((item) => item.khoaHocDanhMuc.length > 0);
-    return khoaHocTheoDanhMuc
+    coursesByCategory = coursesByCategory.filter((item) => item.coursesInCategory.length > 0);
+    return coursesByCategory
 };
 
-module.exports = filterKhoaHocTheoDanhMuc
+module.exports = filterCoursesByCategory

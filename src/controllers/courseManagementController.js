@@ -1,10 +1,10 @@
-const quanLyKhoaHocService = require("../services/quanLyKhoaHocService");
+const courseManagementService = require("../services/courseManagementService");
 
 const layDanhSachKhoaHoc = async (req, res, next) => {
     try {
         const courseName = req.query.courseName;
 
-        const result = await quanLyKhoaHocService.layDanhSachKhoaHoc(courseName);
+        const result = await courseManagementService.layDanhSachKhoaHoc(courseName);
 
         res.status(result.code).json(result);
     } catch (error) {
@@ -16,7 +16,7 @@ const layMotKhoaHoc = async (req, res, next) => {
     try {
         const id = req.query.id;
 
-        const result = await quanLyKhoaHocService.layMotKhoaHoc(id);
+        const result = await courseManagementService.layMotKhoaHoc(id);
 
         res.status(result.code).json(result);
     } catch (error) {
@@ -28,7 +28,7 @@ const getCourseByCategory = async (req, res, next) => {
     try {
         const courseCategoryCode = req.query.courseCategoryCode;
 
-        const result = await quanLyKhoaHocService.getCourseByCategory(courseCategoryCode);
+        const result = await courseManagementService.getCourseByCategory(courseCategoryCode);
 
         res.status(result.code).json(result);
     } catch (error) {
@@ -38,7 +38,7 @@ const getCourseByCategory = async (req, res, next) => {
 
 const getListCourseCategories = async (req, res, next) => {
     try {
-        const result = await quanLyKhoaHocService.getListCourseCategories();
+        const result = await courseManagementService.getListCourseCategories();
 
         res.status(result.code).json(result);
     } catch (error) {
@@ -50,7 +50,7 @@ const themDanhMucKhoaHoc = async (req, res, next) => {
     try {
         const categoryName = req.body.categoryName;
 
-        const result = await quanLyKhoaHocService.themDanhMucKhoaHoc(categoryName);
+        const result = await courseManagementService.themDanhMucKhoaHoc(categoryName);
 
         res.status(result.code).json(result);
     } catch (error) {
@@ -62,7 +62,7 @@ const addCourse = async (req, res, next) => {
     try {
         const { courseName, description, price, courseCategory_ID, willLearn, lessons } = req.body;
 
-        const result = await quanLyKhoaHocService.addCourse(req.file, courseName, description, price, courseCategory_ID, willLearn, lessons);
+        const result = await courseManagementService.addCourse(req.file, courseName, description, price, courseCategory_ID, willLearn, lessons);
 
         res.status(result.code).json(result);
     } catch (error) {
@@ -74,7 +74,7 @@ const updateCourse = async (req, res, next) => {
     try {
         const { courseCode, courseName, description, price, courseCategory_ID, willLearn, lessons } = req.body;
 
-        const result = await quanLyKhoaHocService.updateCourse(req.file, courseCode, courseName, description, price, courseCategory_ID, willLearn, lessons);
+        const result = await courseManagementService.updateCourse(req.file, courseCode, courseName, description, price, courseCategory_ID, willLearn, lessons);
 
         res.status(result.code).json(result);
     } catch (error) {
@@ -86,7 +86,7 @@ const deleteCourse = async (req, res, next) => {
     try {
         const courseCode = req.query.courseCode;
 
-        const result = await quanLyKhoaHocService.deleteCourse(courseCode);
+        const result = await courseManagementService.deleteCourse(courseCode);
 
         res.status(result.code).json(result);
     } catch (error) {
@@ -99,7 +99,7 @@ const enrollCourse = async (req, res, next) => {
         const courseCode = req.body.courseCode;
         const user = req.user;
 
-        const result = await quanLyKhoaHocService.enrollCourse(courseCode, user);
+        const result = await courseManagementService.enrollCourse(courseCode, user);
 
         res.status(result.code).json(result);
     } catch (error) {
@@ -112,7 +112,7 @@ const cancelEnrollment = async (req, res, next) => {
         const courseCode = req.body.courseCode;
         const user = req.user;
 
-        const result = await quanLyKhoaHocService.cancelEnrollment(courseCode, user);
+        const result = await courseManagementService.cancelEnrollment(courseCode, user);
 
         res.status(result.code).json(result);
     } catch (error) {
@@ -124,7 +124,7 @@ const getUserInformationForCourse = async (req, res, next) => {
     try {
         const courseId = req.query.courseId;
 
-        const result = await quanLyKhoaHocService.getUserInformationForCourse(courseId);
+        const result = await courseManagementService.getUserInformationForCourse(courseId);
 
         res.status(result.code).json(result);
     } catch (error) {
@@ -136,7 +136,7 @@ const cancelUserEnrollmentForCourse = async (req, res, next) => {
     try {
         const { userId, courseId } = req.body;
 
-        const result = await quanLyKhoaHocService.cancelUserEnrollmentForCourse(userId, courseId);
+        const result = await courseManagementService.cancelUserEnrollmentForCourse(userId, courseId);
 
         res.status(result.code).json(result);
     } catch (error) {
@@ -148,7 +148,7 @@ const enrollUserForCourse = async (req, res, next) => {
     try {
         const { userId, courseId } = req.body;
 
-        const result = await quanLyKhoaHocService.enrollUserForCourse(userId, courseId);
+        const result = await courseManagementService.enrollUserForCourse(userId, courseId);
 
         res.status(result.code).json(result);
     } catch (error) {

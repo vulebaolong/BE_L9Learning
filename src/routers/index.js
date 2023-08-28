@@ -1,6 +1,6 @@
 const express = require("express");
-const quanLyNguoiDungRouter = require("./quanLyNguoiDungRouter");
-const quanLyKhoaHocRouter = require("./quanLyKhoaHocRouter");
+const userManagementRouter = require("./userManagementRouter");
+const courseManagementRouter = require("./courseManagementRouter");
 
 
 const notFoundHelper = require("../helpers/notFoundHelper");
@@ -14,8 +14,8 @@ router.get("/welcome", (req, res) => {
     res.status(200).json("Welcome Api L9_learning vulebaolong");
 });
 
-router.use("/UserManagement", quanLyNguoiDungRouter);
-router.use("/CourseManagement", quanLyKhoaHocRouter);
+router.use("/UserManagement", userManagementRouter);
+router.use("/CourseManagement", courseManagementRouter);
 
 
 //xử lý các URL người dùng sử dụng không đúng

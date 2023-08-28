@@ -7,7 +7,7 @@ const isFileValidHelper = require("../helpers/isFileValidHelper");
 const EnrollCourseModel = require("../models/enrollCourse");
 const _ = require("lodash");
 const wait = require("../helpers/waitHelper");
-const filterKhoaHocTheoDanhMuc = require("../helpers/khoaHocHelper");
+const filterCoursesByCategory = require("../helpers/khoaHocHelper");
 const UserModel = require("../models/userModel");
 const changeObj = require("../helpers/changeObjHelper");
 
@@ -41,7 +41,7 @@ const getCourseByCategory = async (courseCategoryCode) => {
 
         const danhSachKhoaHoc = await CourseModel.find().populate("courseCategory_ID", "categoryName").select("image courseName");
 
-        const khoaHocTheoDanhMuc = filterKhoaHocTheoDanhMuc(courseCategory, danhSachKhoaHoc);
+        const khoaHocTheoDanhMuc = filterCoursesByCategory(courseCategory, danhSachKhoaHoc);
 
         return responsesHelper(200, "Xử lý thành công", khoaHocTheoDanhMuc);
     }
@@ -49,7 +49,7 @@ const getCourseByCategory = async (courseCategoryCode) => {
 
     const danhSachKhoaHoc = await CourseModel.find({ courseCategory_ID: courseCategoryCode }).populate("courseCategory_ID", "categoryName").select("image courseName");
 
-    const khoaHocTheoDanhMuc = filterKhoaHocTheoDanhMuc([courseCategory], danhSachKhoaHoc);
+    const khoaHocTheoDanhMuc = filterCoursesByCategory([courseCategory], danhSachKhoaHoc);
 
     // await wait(3000)
 
@@ -211,8 +211,8 @@ const deleteCourse = async (courseCode) => {
     // tìm và xoá khoá học
     const deletedKhoaHoc = await CourseModel.findByIdAndDelete(khoaHocDb._id).select("-createdAt -updatedAt -__v");
 
-    // xóa tất cả các documents có khoaHoc_ID
-    await EnrollCourseModel.deleteMany({ khoaHoc_ID: deletedKhoaHoc._id });
+    // xóa tất cả các documents có course_ID
+    await EnrollCourseModel.deleteMany({ course_ID: deletedKhoaHoc._id });
 
     // xoá ảnh cũ
     await deleteImg(deletedKhoaHoc.imageName);
@@ -223,10 +223,10 @@ const deleteCourse = async (courseCode) => {
 const enrollCourse = async (courseCode, user) => {
     if (!courseCode) return responsesHelper(400, "Thiếu courseCode mã khoá học");
 
-    const exitDangKyKhoaHoc = await EnrollCourseModel.findOne({ khoaHoc_ID: courseCode, user_ID: user.id });
+    const exitDangKyKhoaHoc = await EnrollCourseModel.findOne({ course_ID: courseCode, user_ID: user.id });
     if (exitDangKyKhoaHoc) return responsesHelper(400, "Khoá học này đã được đăng ký");
 
-    const enrollCourse = await EnrollCourseModel.create({ khoaHoc_ID: courseCode, user_ID: user.id });
+    const enrollCourse = await EnrollCourseModel.create({ course_ID: courseCode, user_ID: user.id });
 
     // await wait(3000);
 
@@ -236,10 +236,10 @@ const enrollCourse = async (courseCode, user) => {
 const cancelEnrollment = async (courseCode, user) => {
     if (!courseCode) return responsesHelper(400, "Thiếu courseCode mã khoá học");
 
-    const deleteDangKyKhoaHoc = await EnrollCourseModel.findOneAndDelete({ khoaHoc_ID: courseCode, user_ID: user.id });
+    const deleteDangKyKhoaHoc = await EnrollCourseModel.findOneAndDelete({ course_ID: courseCode, user_ID: user.id });
     // if (exitDangKyKhoaHoc) return responsesHelper(400, "Khoá học này đã được đăng ký");
 
-    // const enrollCourse = await EnrollCourseModel.create({ khoaHoc_ID: courseCode, user_ID: user.id });
+    // const enrollCourse = await EnrollCourseModel.create({ course_ID: courseCode, user_ID: user.id });
     // await wait(3000);
 
     return responsesHelper(200, "Xử lý thành công", deleteDangKyKhoaHoc);
@@ -253,7 +253,7 @@ const getUserInformationForCourse = async (courseId) => {
 
     // LỌC NGƯỜI DÙNG ĐÃ ĐĂNG KÝ =================================================================
     let enrolledUsers = changeObj(
-        await EnrollCourseModel.find({ khoaHoc_ID: course._id })
+        await EnrollCourseModel.find({ course_ID: course._id })
             .select("-__v -updatedAt -createdAt -user_ID")
             .populate("user_ID", "username fullName phoneNumber email avatar userType")
     );
@@ -280,7 +280,7 @@ const cancelUserEnrollmentForCourse = async (userId, courseId) => {
     if (!userId) return responsesHelper(400, "Thiếu userId");
     if (!courseId) return responsesHelper(400, "Thiếu courseId");
 
-    const result = await EnrollCourseModel.deleteMany({ khoaHoc_ID: courseId, user_ID: userId });
+    const result = await EnrollCourseModel.deleteMany({ course_ID: courseId, user_ID: userId });
 
     return responsesHelper(200, "Xử lý thành công", result);
 };
@@ -289,7 +289,7 @@ const enrollUserForCourse = async (userId, courseId) => {
     if (!userId) return responsesHelper(400, "Thiếu userId");
     if (!courseId) return responsesHelper(400, "Thiếu courseId");
 
-    const result = await EnrollCourseModel.create({ khoaHoc_ID: courseId, user_ID: userId });
+    const result = await EnrollCourseModel.create({ course_ID: courseId, user_ID: userId });
 
     return responsesHelper(200, "Xử lý thành công", result);
 };

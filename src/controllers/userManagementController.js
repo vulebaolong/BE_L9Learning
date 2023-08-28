@@ -1,10 +1,10 @@
-const quanLyNguoiDungService = require("../services/quanLyNguoiDungService");
+const userManagementService = require("../services/userManagementService");
 
 const register = async (req, res, next) => {
     try {
         const { username, password, email, phoneNumber, fullName } = req.body;
 
-        const result = await quanLyNguoiDungService.register(username, password, email, phoneNumber, fullName);
+        const result = await userManagementService.register(username, password, email, phoneNumber, fullName);
 
         res.status(result.code).json(result);
     } catch (error) {
@@ -16,7 +16,7 @@ const login = async (req, res, next) => {
     try {
         const { username, password } = req.body;
 
-        const result = await quanLyNguoiDungService.login(username, password);
+        const result = await userManagementService.login(username, password);
 
         res.status(result.code).json(result);
     } catch (error) {
@@ -29,7 +29,7 @@ const updateAccountInfo = async (req, res, next) => {
         const user = req.user;
         const { email, fullName, userType, phoneNumber, username } = req.body;
 
-        const result = await quanLyNguoiDungService.updateAccountInfo(email, fullName, userType, phoneNumber, username, user);
+        const result = await userManagementService.updateAccountInfo(email, fullName, userType, phoneNumber, username, user);
 
         res.status(result.code).json(result);
     } catch (error) {
@@ -41,7 +41,7 @@ const updateOneAccountInfo = async (req, res, next) => {
     try {
         const user = req.user;
 
-        const result = await quanLyNguoiDungService.updateOneAccountInfo(req.body, user);
+        const result = await userManagementService.updateOneAccountInfo(req.body, user);
 
         res.status(result.code).json(result);
     } catch (error) {
@@ -55,7 +55,7 @@ const updatePassword = async (req, res, next) => {
 
         const { currentPassword, newPassword } = req.body;
 
-        const result = await quanLyNguoiDungService.updatePassword(currentPassword, newPassword, user);
+        const result = await userManagementService.updatePassword(currentPassword, newPassword, user);
 
         res.status(result.code).json(result);
     } catch (error) {
@@ -67,7 +67,7 @@ const getAccountInfo = async (req, res, next) => {
     try {
         const user = req.user;
 
-        const result = await quanLyNguoiDungService.getAccountInfo(user);
+        const result = await userManagementService.getAccountInfo(user);
 
         res.status(result.code).json(result);
     } catch (error) {
@@ -79,7 +79,7 @@ const updateAccountAvatar = async (req, res, next) => {
     try {
         const user = req.user;
 
-        const result = await quanLyNguoiDungService.updateAccountAvatar(req.file, user);
+        const result = await userManagementService.updateAccountAvatar(req.file, user);
 
         res.status(result.code).json(result);
     } catch (error) {
@@ -91,7 +91,7 @@ const updateUserAvatar = async (req, res, next) => {
     try {
         const userId = req.body.userId;
 
-        const result = await quanLyNguoiDungService.updateUserAvatar(req.file, userId);
+        const result = await userManagementService.updateUserAvatar(req.file, userId);
 
         res.status(result.code).json(result);
     } catch (error) {
@@ -103,7 +103,7 @@ const getListUsers = async (req, res, next) => {
     try {
         const tenNguoiDung = req.query.tenNguoiDung;
 
-        const result = await quanLyNguoiDungService.getListUsers(tenNguoiDung);
+        const result = await userManagementService.getListUsers(tenNguoiDung);
 
         res.status(result.code).json(result);
     } catch (error) {
@@ -115,7 +115,7 @@ const getUserInfo = async (req, res, next) => {
     try {
         const userId = req.query.userId;
 
-        const result = await quanLyNguoiDungService.getUserInfo(userId);
+        const result = await userManagementService.getUserInfo(userId);
 
         res.status(result.code).json(result);
     } catch (error) {
@@ -127,7 +127,7 @@ const updateOneUserInfo = async (req, res, next) => {
     try {
         const thongTin = req.body;
 
-        const result = await quanLyNguoiDungService.updateOneUserInfo(thongTin);
+        const result = await userManagementService.updateOneUserInfo(thongTin);
 
         res.status(result.code).json(result);
     } catch (error) {
@@ -139,7 +139,7 @@ const deleteUser = async (req, res, next) => {
     try {
         const userId = req.query.userId;
 
-        const result = await quanLyNguoiDungService.deleteUser(userId);
+        const result = await userManagementService.deleteUser(userId);
 
         res.status(result.code).json(result);
     } catch (error) {
@@ -151,7 +151,7 @@ const getCoursesInfoForUsser = async (req, res, next) => {
     try {
         const userId = req.query.userId;
 
-        const result = await quanLyNguoiDungService.getCoursesInfoForUsser(userId);
+        const result = await userManagementService.getCoursesInfoForUsser(userId);
 
         res.status(result.code).json(result);
     } catch (error) {
@@ -163,7 +163,7 @@ const cancelCourseEnrollmentForUser = async (req, res, next) => {
     try {
         const { userId, courseId } = req.body;
 
-        const result = await quanLyNguoiDungService.cancelCourseEnrollmentForUser(userId, courseId);
+        const result = await userManagementService.cancelCourseEnrollmentForUser(userId, courseId);
 
         res.status(result.code).json(result);
     } catch (error) {
@@ -175,7 +175,7 @@ const enrollCourseForUser = async (req, res, next) => {
     try {
         const { userId, courseId } = req.body;
 
-        const result = await quanLyNguoiDungService.enrollCourseForUser(userId, courseId);
+        const result = await userManagementService.enrollCourseForUser(userId, courseId);
 
         res.status(result.code).json(result);
     } catch (error) {
