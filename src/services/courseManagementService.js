@@ -11,13 +11,13 @@ const filterCoursesByCategory = require("../helpers/khoaHocHelper");
 const UserModel = require("../models/userModel");
 const changeObj = require("../helpers/changeObjHelper");
 
-const layDanhSachKhoaHoc = async (courseName) => {
+const getListCourses = async (courseName) => {
     if (!courseName) {
-        const khoaHocs = await CourseModel.find().populate("courseCategory_ID").select("-createdAt -updatedAt -__v");
+        const courses = await CourseModel.find().populate("courseCategory_ID").select("-createdAt -updatedAt -__v");
 
         // await wait(3000)
 
-        return responsesHelper(200, "Xử lý thành công", khoaHocs);
+        return responsesHelper(200, "Xử lý thành công", courses);
     }
 
     const fuzzySearchQuery = _.escapeRegExp(courseName);
@@ -27,7 +27,7 @@ const layDanhSachKhoaHoc = async (courseName) => {
     return responsesHelper(200, "Xử lý thành công", courses);
 };
 
-const layMotKhoaHoc = async (id) => {
+const getOneCourse = async (id) => {
     if (!id) return responsesHelper(400, "Thiếu id khoá học");
 
     const courses = await CourseModel.findById(id).populate("courseCategory_ID").select("-createdAt -updatedAt -__v");
@@ -39,21 +39,21 @@ const getCourseByCategory = async (courseCategoryCode) => {
     if (!courseCategoryCode) {
         const courseCategory = await CourseCategoryModel.find().select("-createdAt -updatedAt -__v");
 
-        const danhSachKhoaHoc = await CourseModel.find().populate("courseCategory_ID", "categoryName").select("image courseName");
+        const listCourse = await CourseModel.find().populate("courseCategory_ID", "categoryName").select("image courseName");
 
-        const khoaHocTheoDanhMuc = filterCoursesByCategory(courseCategory, danhSachKhoaHoc);
+        const courseByCategory = filterCoursesByCategory(courseCategory, listCourse);
 
-        return responsesHelper(200, "Xử lý thành công", khoaHocTheoDanhMuc);
+        return responsesHelper(200, "Xử lý thành công", courseByCategory);
     }
     const courseCategory = await CourseCategoryModel.findById(courseCategoryCode).select("-createdAt -updatedAt -__v");
 
-    const danhSachKhoaHoc = await CourseModel.find({ courseCategory_ID: courseCategoryCode }).populate("courseCategory_ID", "categoryName").select("image courseName");
+    const listCourse = await CourseModel.find({ courseCategory_ID: courseCategoryCode }).populate("courseCategory_ID", "categoryName").select("image courseName");
 
-    const khoaHocTheoDanhMuc = filterCoursesByCategory([courseCategory], danhSachKhoaHoc);
+    const courseByCategory = filterCoursesByCategory([courseCategory], listCourse);
 
     // await wait(3000)
 
-    return responsesHelper(200, "Xử lý thành công", khoaHocTheoDanhMuc);
+    return responsesHelper(200, "Xử lý thành công", courseByCategory);
 };
 
 const getListCourseCategories = async () => {
@@ -61,7 +61,7 @@ const getListCourseCategories = async () => {
     return responsesHelper(200, "Xử lý thành công", courseCategory);
 };
 
-const themDanhMucKhoaHoc = async (categoryName) => {
+const addCategory = async (categoryName) => {
     if (!categoryName) return responsesHelper(400, "Thiếu categoryName");
 
     const courseCategory = await CourseCategoryModel.create({ categoryName });
@@ -83,9 +83,9 @@ const addCourse = async (file, courseName, description, price, courseCategory_ID
 
     const fetchChuongHocData = async (lessons) => {
         return Promise.all(
-            lessons.map(async (chuong) => {
+            lessons.map(async (chapter) => {
                 const videos = await Promise.all(
-                    chuong.videos.map(async (video) => {
+                    chapter.videos.map(async (video) => {
                         const duration = await youtubeHelper.fetchVideoDuration(video.video_url);
                         return {
                             title: video.title,
@@ -95,7 +95,7 @@ const addCourse = async (file, courseName, description, price, courseCategory_ID
                     })
                 );
                 return {
-                    title: chuong.title,
+                    title: chapter.title,
                     videos,
                 };
             })
@@ -107,7 +107,7 @@ const addCourse = async (file, courseName, description, price, courseCategory_ID
     const exitMove = await CourseModel.findOne({ courseName });
     if (exitMove) return responsesHelper(400, "Khoá học đã tồn tại");
 
-    const objHinhAnh = await uploadImg(file, "khoaHoc");
+    const objImg = await uploadImg(file, "khoaHoc");
 
     const courses = await CourseModel.create({
         courseName,
@@ -116,8 +116,8 @@ const addCourse = async (file, courseName, description, price, courseCategory_ID
         courseCategory_ID,
         willLearn,
         lessons,
-        image: objHinhAnh.image,
-        imageName: objHinhAnh.imageName,
+        image: objImg.image,
+        imageName: objImg.imageName,
     });
 
     // await wait(3000)
@@ -142,9 +142,9 @@ const updateCourse = async (file, courseCode, courseName, description, price, co
 
     const fetchChuongHocData = async (lessons) => {
         return Promise.all(
-            lessons.map(async (chuong) => {
+            lessons.map(async (chapter) => {
                 const videos = await Promise.all(
-                    chuong.videos.map(async (video) => {
+                    chapter.videos.map(async (video) => {
                         const duration = await youtubeHelper.fetchVideoDuration(video.video_url);
                         return {
                             title: video.title,
@@ -154,7 +154,7 @@ const updateCourse = async (file, courseCode, courseName, description, price, co
                     })
                 );
                 return {
-                    title: chuong.title,
+                    title: chapter.title,
                     videos,
                 };
             })
@@ -163,7 +163,7 @@ const updateCourse = async (file, courseCode, courseName, description, price, co
 
     lessons = await fetchChuongHocData(lessons);
 
-    let objHinhAnh = {
+    let objImg = {
         image: courses.image,
         imageName: courses.imageName,
     };
@@ -177,11 +177,11 @@ const updateCourse = async (file, courseCode, courseName, description, price, co
         if (!isDeleteImg) return responsesHelper(400, "Xử lý hình ảnh không thành công");
 
         // thêm ảnh mới
-        if (isDeleteImg) objHinhAnh = await uploadImg(file, "khoaHoc");
+        if (isDeleteImg) objImg = await uploadImg(file, "khoaHoc");
     }
 
     // update phim
-    const khoaHocUpdate = await CourseModel.findByIdAndUpdate(
+    const courseUpdate = await CourseModel.findByIdAndUpdate(
         courseCode,
         {
             courseName,
@@ -190,41 +190,41 @@ const updateCourse = async (file, courseCode, courseName, description, price, co
             courseCategory_ID,
             willLearn,
             lessons,
-            image: objHinhAnh.image,
-            imageName: objHinhAnh.imageName,
+            image: objImg.image,
+            imageName: objImg.imageName,
         },
         { new: true }
     );
 
     // await wait(5000)
 
-    return responsesHelper(200, "Xử lý thành công", khoaHocUpdate);
+    return responsesHelper(200, "Xử lý thành công", courseUpdate);
 };
 
 const deleteCourse = async (courseCode) => {
     if (!courseCode) return responsesHelper(400, "Thiếu courseCode khoá học");
 
     // Kiểm tra courseCode có tồn tại khoá học không
-    const khoaHocDb = await CourseModel.findById(courseCode);
-    if (!khoaHocDb) return responsesHelper(400, "Xử lý không thành công", `Khoá học không tồn tại`);
+    const courseDb = await CourseModel.findById(courseCode);
+    if (!courseDb) return responsesHelper(400, "Xử lý không thành công", `Khoá học không tồn tại`);
 
     // tìm và xoá khoá học
-    const deletedKhoaHoc = await CourseModel.findByIdAndDelete(khoaHocDb._id).select("-createdAt -updatedAt -__v");
+    const deletedCourse = await CourseModel.findByIdAndDelete(courseDb._id).select("-createdAt -updatedAt -__v");
 
     // xóa tất cả các documents có course_ID
-    await EnrollCourseModel.deleteMany({ course_ID: deletedKhoaHoc._id });
+    await EnrollCourseModel.deleteMany({ course_ID: deletedCourse._id });
 
     // xoá ảnh cũ
-    await deleteImg(deletedKhoaHoc.imageName);
+    await deleteImg(deletedCourse.imageName);
 
-    return responsesHelper(200, "Xử lý thành công", deletedKhoaHoc);
+    return responsesHelper(200, "Xử lý thành công", deletedCourse);
 };
 
 const enrollCourse = async (courseCode, user) => {
     if (!courseCode) return responsesHelper(400, "Thiếu courseCode mã khoá học");
 
-    const exitDangKyKhoaHoc = await EnrollCourseModel.findOne({ course_ID: courseCode, user_ID: user.id });
-    if (exitDangKyKhoaHoc) return responsesHelper(400, "Khoá học này đã được đăng ký");
+    const exitEnrollCourse = await EnrollCourseModel.findOne({ course_ID: courseCode, user_ID: user.id });
+    if (exitEnrollCourse) return responsesHelper(400, "Khoá học này đã được đăng ký");
 
     const enrollCourse = await EnrollCourseModel.create({ course_ID: courseCode, user_ID: user.id });
 
@@ -236,13 +236,9 @@ const enrollCourse = async (courseCode, user) => {
 const cancelEnrollment = async (courseCode, user) => {
     if (!courseCode) return responsesHelper(400, "Thiếu courseCode mã khoá học");
 
-    const deleteDangKyKhoaHoc = await EnrollCourseModel.findOneAndDelete({ course_ID: courseCode, user_ID: user.id });
-    // if (exitDangKyKhoaHoc) return responsesHelper(400, "Khoá học này đã được đăng ký");
+    const deleteEnrollCourse = await EnrollCourseModel.findOneAndDelete({ course_ID: courseCode, user_ID: user.id });
 
-    // const enrollCourse = await EnrollCourseModel.create({ course_ID: courseCode, user_ID: user.id });
-    // await wait(3000);
-
-    return responsesHelper(200, "Xử lý thành công", deleteDangKyKhoaHoc);
+    return responsesHelper(200, "Xử lý thành công", deleteEnrollCourse);
 };
 
 const getUserInformationForCourse = async (courseId) => {
@@ -295,10 +291,10 @@ const enrollUserForCourse = async (userId, courseId) => {
 };
 
 module.exports = {
-    layDanhSachKhoaHoc,
-    themDanhMucKhoaHoc,
+    getListCourses,
+    addCategory,
     addCourse,
-    layMotKhoaHoc,
+    getOneCourse,
     deleteCourse,
     updateCourse,
     getListCourseCategories,

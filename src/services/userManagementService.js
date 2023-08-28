@@ -18,11 +18,11 @@ const register = async (username, password, email, phoneNumber, fullName) => {
     if (!phoneNumber) return responsesHelper(400, "Thiếu số điện thoại");
     if (!fullName) return responsesHelper(400, "Thiếu họ và tên");
 
-    const matKhauMoi = await hashedPassword(password);
+    const passwordNew = await hashedPassword(password);
 
     const user = await UserModel.create({
         username,
-        password: matKhauMoi,
+        password: passwordNew,
         email,
         phoneNumber,
         fullName,
@@ -45,23 +45,23 @@ const login = async (username, password) => {
     const user = await UserModel.findOne({ username }).select("+password");
     if (!user) return responsesHelper(401, "Tài khoản không tồn tại");
 
-    const isMatKhau = await checkPassword(password, user.password);
-    if (!isMatKhau) return responsesHelper(401, "Mật khẩu không đúng");
+    const isPassword = await checkPassword(password, user.password);
+    if (!isPassword) return responsesHelper(401, "Mật khẩu không đúng");
 
     // tạo token
     const accessToken = createJwt({ id: `${user._id}`, username: user.username, email: user.email, phoneNumber: user.phoneNumber, fullName: user.fullName }, "90d");
     if (!accessToken) return responsesHelper(500, "Lỗi server: Không tạo được token");
 
-    const chiTietKhoaHocGhiDanh = await EnrollCourseModel.find({ user_ID: user._id })
+    const enrolledCourseDetail = await EnrollCourseModel.find({ user_ID: user._id })
         .select("-__v -updatedAt -createdAt -user_ID")
         .populate("course_ID", "image description courseName");
 
-    const chiTietKhoaHocGhiDanhResult = chiTietKhoaHocGhiDanh.map((item) => {
+    const enrolledCourseDetailResult = enrolledCourseDetail.map((item) => {
         return item.course_ID;
     });
 
     return responsesHelper(200, "Đăng nhập thành công", {
-        chiTietKhoaHocGhiDanh: chiTietKhoaHocGhiDanhResult,
+        enrolledCourseDetail: enrolledCourseDetailResult,
         id: user._id,
         username: user.username,
         email: user.email,
@@ -77,16 +77,16 @@ const login = async (username, password) => {
 const getAccountInfo = async (user) => {
     const userReturn = await UserModel.findById(user.id);
 
-    const chiTietKhoaHocGhiDanh = await EnrollCourseModel.find({ user_ID: user.id })
+    const enrolledCourseDetail = await EnrollCourseModel.find({ user_ID: user.id })
         .select("-__v -updatedAt -createdAt -user_ID")
         .populate("course_ID", "image description courseName");
 
-    const chiTietKhoaHocGhiDanhResult = chiTietKhoaHocGhiDanh.map((item) => {
+    const enrolledCourseDetailResult = enrolledCourseDetail.map((item) => {
         return item.course_ID;
     });
 
     return responsesHelper(200, "Xử lý thành công", {
-        chiTietKhoaHocGhiDanh: chiTietKhoaHocGhiDanhResult,
+        enrolledCourseDetail: enrolledCourseDetailResult,
         id: userReturn._id,
         username: userReturn.username,
         email: userReturn.email,
@@ -130,17 +130,17 @@ const updatePassword = async (currentPassword, newPassword, user) => {
     if (!newPassword) return responsesHelper(400, "Thiếu mật khẩu mới");
 
     const userDb = await UserModel.findById(user.id).select("+password");
-    const matKhauDb = userDb.password;
+    const passwordDb = userDb.password;
 
     // kiểm tra mật khẩu current
-    const isMatKhauCurrent = await checkPassword(currentPassword, matKhauDb);
+    const isMatKhauCurrent = await checkPassword(currentPassword, passwordDb);
     if (!isMatKhauCurrent) return responsesHelper(400, "Xử lý không thành công", "Mật khẩu hiện tại không chính xác");
 
     // mã hoá mật khẩu mới
-    const matKhauNewDb = await hashedPassword(newPassword);
+    const passwordNewDb = await hashedPassword(newPassword);
 
     // lưu mật khẩu mới vào db
-    await UserModel.findByIdAndUpdate(user.id, { password: matKhauNewDb });
+    await UserModel.findByIdAndUpdate(user.id, { password: passwordNewDb });
 
     return responsesHelper(200, "Xử lý thành công", "Thay đổi mật khẩu thành công");
 };
@@ -158,12 +158,12 @@ const updateAccountAvatar = async (file, user) => {
     // Trường hợp thay đổi avart không xoá AVATAR_DEFAULT
     if (userDb.avatar === AVATAR_DEFAULT) {
         console.log("Trường hợp thay đổi avart không xoá AVATAR_DEFAULT");
-        const hinhAnhNew = await uploadImg(file, "avatas");
+        const imgNew = await uploadImg(file, "avatas");
         const userUpdate = await UserModel.findByIdAndUpdate(
             userDb._id,
             {
-                avatar: hinhAnhNew.image,
-                avatarName: hinhAnhNew.imageName,
+                avatar: imgNew.image,
+                avatarName: imgNew.imageName,
             },
             { new: true }
         );
@@ -179,13 +179,13 @@ const updateAccountAvatar = async (file, user) => {
         if (!isDeleteImg) return responsesHelper(400, "Xử lý deleteImg hình ảnh không thành công");
 
         // thêm ảnh mới
-        if (isDeleteImg) hinhAnhNew = await uploadImg(file, "avatas");
+        if (isDeleteImg) imgNew = await uploadImg(file, "avatas");
 
         const userUpdate = await UserModel.findByIdAndUpdate(
             userDb._id,
             {
-                avatar: hinhAnhNew.image,
-                avatarName: hinhAnhNew.imageName,
+                avatar: imgNew.image,
+                avatarName: imgNew.imageName,
             },
             { new: true }
         );
@@ -196,8 +196,6 @@ const updateAccountAvatar = async (file, user) => {
 };
 
 const updateUserAvatar = async (file, userId) => {
-    console.log(file);
-    console.log(userId);
     if (!file) return responsesHelper(200, "Giữ lại hình ảnh cũ, không nhận được hình ảnh mới");
 
     const userDb = await UserModel.findById(userId);
@@ -207,12 +205,12 @@ const updateUserAvatar = async (file, userId) => {
     // Trường hợp thay đổi avart không xoá AVATAR_DEFAULT
     if (userDb.avatar === AVATAR_DEFAULT) {
         console.log("Trường hợp thay đổi avart không xoá AVATAR_DEFAULT");
-        const hinhAnhNew = await uploadImg(file, "avatas");
+        const imgNew = await uploadImg(file, "avatas");
         const userUpdate = await UserModel.findByIdAndUpdate(
             userDb._id,
             {
-                avatar: hinhAnhNew.image,
-                avatarName: hinhAnhNew.imageName,
+                avatar: imgNew.image,
+                avatarName: imgNew.imageName,
             },
             { new: true }
         );
@@ -228,13 +226,13 @@ const updateUserAvatar = async (file, userId) => {
         if (!isDeleteImg) return responsesHelper(400, "Xử lý deleteImg hình ảnh không thành công");
 
         // thêm ảnh mới
-        if (isDeleteImg) hinhAnhNew = await uploadImg(file, "avatas");
+        if (isDeleteImg) imgNew = await uploadImg(file, "avatas");
 
         const userUpdate = await UserModel.findByIdAndUpdate(
             userDb._id,
             {
-                avatar: hinhAnhNew.image,
-                avatarName: hinhAnhNew.imageName,
+                avatar: imgNew.image,
+                avatarName: imgNew.imageName,
             },
             { new: true }
         );
@@ -245,33 +243,34 @@ const updateUserAvatar = async (file, userId) => {
     // return responsesHelper(200, "Xử lý thành công", file);
 };
 
-const getListUsers = async (tenNguoiDung) => {
-    if (!tenNguoiDung) {
-        const danhSachNguoiDung = await UserModel.find().select("-createdAt -updatedAt -__v");
+const getListUsers = async (fullName) => {
+    if (!fullName) {
+        const listUser = await UserModel.find().select("-createdAt -updatedAt -__v");
 
         // await wait(3000)
 
-        return responsesHelper(200, "Xử lý thành công", danhSachNguoiDung);
+        return responsesHelper(200, "Xử lý thành công", listUser);
     }
 
-    const fuzzySearchQuery = _.escapeRegExp(tenNguoiDung);
+    const fuzzySearchQuery = _.escapeRegExp(fullName);
 
-    const danhSachNguoiDung = await UserModel.find({ tenNguoiDung: { $regex: fuzzySearchQuery, $options: "i" } }).select("-createdAt -updatedAt -__v");
+    const listUser = await UserModel.find({ fullName: { $regex: fuzzySearchQuery, $options: "i" } }).select("-createdAt -updatedAt -__v");
 
-    return responsesHelper(200, "Xử lý thành công", danhSachNguoiDung);
+    return responsesHelper(200, "Xử lý thành công", listUser);
 };
 
 const getUserInfo = async (userId) => {
     if (!userId) return responsesHelper(400, "Thiếu userId tài khoản");
 
-    const nguoiDung = await UserModel.findById(userId).select("-createdAt -updatedAt -__v");
-    if (!nguoiDung) return responsesHelper(400, "Xử lý không thành công", `Người dùng không tồn tại`);
+    const userInfo = await UserModel.findById(userId).select("-createdAt -updatedAt -__v");
 
-    return responsesHelper(200, "Xử lý thành công", nguoiDung);
+    if (!userInfo) return responsesHelper(400, "Xử lý không thành công", `Người dùng không tồn tại`);
+
+    return responsesHelper(200, "Xử lý thành công", userInfo);
 };
 
-const updateOneUserInfo = async (thongTin) => {
-    const { userId, ...newObject } = thongTin;
+const updateOneUserInfo = async (info) => {
+    const { userId, ...newObject } = info;
     if (!userId) return responsesHelper(400, "Thiếu userId");
 
     // Kiểm tra userId có tồn tại người dùng không
@@ -300,45 +299,45 @@ const deleteUser = async (userId) => {
     if (!userDb) return responsesHelper(400, "Xử lý không thành công", `Người dùng không tồn tại`);
 
     // Xoá người dùng
-    const deletedNguoiDung = await UserModel.findByIdAndDelete(userDb._id).select("-createdAt -updatedAt -__v");
+    const deletedUser = await UserModel.findByIdAndDelete(userDb._id).select("-createdAt -updatedAt -__v");
 
     // xóa tất cả các documents có user_ID
-    await EnrollCourseModel.deleteMany({ user_ID: deletedNguoiDung._id });
+    await EnrollCourseModel.deleteMany({ user_ID: deletedUser._id });
 
     // Trường hợp đã từng thay đổi avatar nên phải xoá avatar
-    if (deletedNguoiDung.avatar !== AVATAR_DEFAULT) {
-        const isDeleteImg = await deleteImg(deletedNguoiDung.avatarName);
+    if (deletedUser.avatar !== AVATAR_DEFAULT) {
+        const isDeleteImg = await deleteImg(deletedUser.avatarName);
         if (!isDeleteImg) return responsesHelper(400, "Xử lý deleteImg hình ảnh không thành công");
     }
 
-    return responsesHelper(200, "Xử lý thành công", deletedNguoiDung);
+    return responsesHelper(200, "Xử lý thành công", deletedUser);
 };
 
 const getCoursesInfoForUsser = async (userId) => {
     if (!userId) return responsesHelper(400, "Thiếu userId tài khoản");
 
-    const nguoiDung = await UserModel.findById(userId).select("-createdAt -updatedAt -__v");
-    if (!nguoiDung) return responsesHelper(400, "Xử lý không thành công", `Người dùng không tồn tại`);
+    const userInfo = await UserModel.findById(userId).select("-createdAt -updatedAt -__v");
+    if (!userInfo) return responsesHelper(400, "Xử lý không thành công", `Người dùng không tồn tại`);
 
     // LỌC KHOÁ HỌC ĐÃ ĐĂNG KÝ =================================================================
-    let khoaHocDaDangKy = changeObj(
-        await EnrollCourseModel.find({ user_ID: nguoiDung._id }).select("-__v -updatedAt -createdAt -user_ID").populate("course_ID", "image courseName")
+    let enrolledCourse = changeObj(
+        await EnrollCourseModel.find({ user_ID: userInfo._id }).select("-__v -updatedAt -createdAt -user_ID").populate("course_ID", "image courseName")
     );
-    khoaHocDaDangKy = khoaHocDaDangKy.map((courses) => {
+    enrolledCourse = enrolledCourse.map((courses) => {
         return { ...courses.course_ID };
     });
 
     // LỌC KHOÁ HỌC CHƯA ĐĂNG KÝ ===============================================================
-    const arrIdKhoaHocDaDangKy = khoaHocDaDangKy.map((courses) => courses._id);
+    const arrIdCourseEnrolled = enrolledCourse.map((courses) => courses._id);
 
-    // từ mảng các id chứa khoá học đã đăng ký: arrIdKhoaHocDaDangKy
-    // tìm kiếm trong CourseModel những documents không có trong arrIdKhoaHocDaDangKy
-    const khoaHocChuaDangKy = await CourseModel.find({ _id: { $nin: arrIdKhoaHocDaDangKy } }).select("image courseName");
+    // từ mảng các id chứa khoá học đã đăng ký: arrIdCourseEnrolled
+    // tìm kiếm trong CourseModel những documents không có trong arrIdCourseEnrolled
+    const unenrolledCourse = await CourseModel.find({ _id: { $nin: arrIdCourseEnrolled } }).select("image courseName");
 
     const result = {
-        nguoiDung,
-        khoaHocDaDangKy,
-        khoaHocChuaDangKy,
+        userInfo,
+        enrolledCourse,
+        unenrolledCourse,
     };
     return responsesHelper(200, "Xử lý thành công", result);
 };

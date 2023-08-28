@@ -6,14 +6,14 @@ const protect = require("../middlewares/protect");
 const router = express.Router();
 const upload = multer();
 
-router.get("/GetListCourses", courseManagementController.layDanhSachKhoaHoc);
-router.get("/GetCourseById", courseManagementController.layMotKhoaHoc);
+router.get("/GetListCourses", courseManagementController.getListCourses);
+router.get("/GetCourseById", courseManagementController.getOneCourse);
 router.get("/GetCourseByCategory", courseManagementController.getCourseByCategory);
 router.get("/GetListCourseCategories", courseManagementController.getListCourseCategories);
 
 //! những dòng mã chạy sau sẽ đều có protect, vì chạy theo thứ tự
 router.use(protect);
-router.post("/ThemDanhMucKhoaHoc", courseManagementController.themDanhMucKhoaHoc);
+router.post("/AddCategory", courseManagementController.addCategory);
 router.post("/AddCourse", upload.single("image"), courseManagementController.addCourse);
 router.delete("/DeleteCourse", courseManagementController.deleteCourse);
 router.put("/UpdateCourse", upload.single("image"), courseManagementController.updateCourse);

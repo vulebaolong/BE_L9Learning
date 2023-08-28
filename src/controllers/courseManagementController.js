@@ -1,10 +1,10 @@
 const courseManagementService = require("../services/courseManagementService");
 
-const layDanhSachKhoaHoc = async (req, res, next) => {
+const getListCourses = async (req, res, next) => {
     try {
         const courseName = req.query.courseName;
 
-        const result = await courseManagementService.layDanhSachKhoaHoc(courseName);
+        const result = await courseManagementService.getListCourses(courseName);
 
         res.status(result.code).json(result);
     } catch (error) {
@@ -12,11 +12,11 @@ const layDanhSachKhoaHoc = async (req, res, next) => {
     }
 };
 
-const layMotKhoaHoc = async (req, res, next) => {
+const getOneCourse = async (req, res, next) => {
     try {
         const id = req.query.id;
 
-        const result = await courseManagementService.layMotKhoaHoc(id);
+        const result = await courseManagementService.getOneCourse(id);
 
         res.status(result.code).json(result);
     } catch (error) {
@@ -46,11 +46,11 @@ const getListCourseCategories = async (req, res, next) => {
     }
 };
 
-const themDanhMucKhoaHoc = async (req, res, next) => {
+const addCategory = async (req, res, next) => {
     try {
         const categoryName = req.body.categoryName;
 
-        const result = await courseManagementService.themDanhMucKhoaHoc(categoryName);
+        const result = await courseManagementService.addCategory(categoryName);
 
         res.status(result.code).json(result);
     } catch (error) {
@@ -157,10 +157,10 @@ const enrollUserForCourse = async (req, res, next) => {
 };
 
 module.exports = {
-    layDanhSachKhoaHoc,
-    themDanhMucKhoaHoc,
+    getListCourses,
+    addCategory,
     addCourse,
-    layMotKhoaHoc,
+    getOneCourse,
     deleteCourse,
     updateCourse,
     getListCourseCategories,
