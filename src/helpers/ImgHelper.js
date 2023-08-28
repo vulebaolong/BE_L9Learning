@@ -27,9 +27,9 @@ multer({ storage: multer.memoryStorage() });
 const uploadImg = async (file, folder) => {
     const dateTime = moment(new Date()).format("DD_MM_YYYY-HH_mm_ss");
 
-    const tenHinhAnh = `${folder}/${dateTime+'-'+file.originalname}`;
+    const imageName = `${folder}/${dateTime+'-'+file.originalname}`;
 
-    const storageRef = ref(storage, tenHinhAnh);
+    const storageRef = ref(storage, imageName);
 
     // Create file metadata including the content type
     const metadata = {
@@ -44,15 +44,15 @@ const uploadImg = async (file, folder) => {
     const downloadURL = await getDownloadURL(snapshot.ref);
 
     return {
-        tenHinhAnh,
-        hinhAnh: downloadURL,
+        imageName,
+        image: downloadURL,
     };
 };
 
-const deleteImg = async (tenHinhAnh) => {
+const deleteImg = async (imageName) => {
     try {
         // Create a reference to the file to delete
-        const desertRef = ref(storage, tenHinhAnh);
+        const desertRef = ref(storage, imageName);
         // Delete the file
         await deleteObject(desertRef);
         return true;

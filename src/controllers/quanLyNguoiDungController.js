@@ -2,9 +2,9 @@ const quanLyNguoiDungService = require("../services/quanLyNguoiDungService");
 
 const register = async (req, res, next) => {
     try {
-        const { taiKhoan, matKhau, email, soDt, hoTen } = req.body;
+        const { username, password, email, phoneNumber, fullName } = req.body;
 
-        const result = await quanLyNguoiDungService.register(taiKhoan, matKhau, email, soDt, hoTen);
+        const result = await quanLyNguoiDungService.register(username, password, email, phoneNumber, fullName);
 
         res.status(result.code).json(result);
     } catch (error) {
@@ -14,9 +14,9 @@ const register = async (req, res, next) => {
 
 const login = async (req, res, next) => {
     try {
-        const { taiKhoan, matKhau } = req.body;
+        const { username, password } = req.body;
 
-        const result = await quanLyNguoiDungService.login(taiKhoan, matKhau);
+        const result = await quanLyNguoiDungService.login(username, password);
 
         res.status(result.code).json(result);
     } catch (error) {
@@ -27,9 +27,9 @@ const login = async (req, res, next) => {
 const updateAccountInfo = async (req, res, next) => {
     try {
         const user = req.user;
-        const { email, hoTen, maLoaiNguoiDung, soDt, taiKhoan } = req.body;
+        const { email, fullName, userType, phoneNumber, username } = req.body;
 
-        const result = await quanLyNguoiDungService.updateAccountInfo(email, hoTen, maLoaiNguoiDung, soDt, taiKhoan, user);
+        const result = await quanLyNguoiDungService.updateAccountInfo(email, fullName, userType, phoneNumber, username, user);
 
         res.status(result.code).json(result);
     } catch (error) {

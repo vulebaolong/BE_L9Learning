@@ -48,9 +48,9 @@ const getListCourseCategories = async (req, res, next) => {
 
 const themDanhMucKhoaHoc = async (req, res, next) => {
     try {
-        const tenDanhMuc = req.body.tenDanhMuc;
+        const categoryName = req.body.categoryName;
 
-        const result = await quanLyKhoaHocService.themDanhMucKhoaHoc(tenDanhMuc);
+        const result = await quanLyKhoaHocService.themDanhMucKhoaHoc(categoryName);
 
         res.status(result.code).json(result);
     } catch (error) {
@@ -60,9 +60,9 @@ const themDanhMucKhoaHoc = async (req, res, next) => {
 
 const addCourse = async (req, res, next) => {
     try {
-        const { courseName, moTa, giaTien, danhMucKhoaHoc_ID, seHocDuoc, chuongHoc } = req.body;
+        const { courseName, description, price, courseCategory_ID, willLearn, lessons } = req.body;
 
-        const result = await quanLyKhoaHocService.addCourse(req.file, courseName, moTa, giaTien, danhMucKhoaHoc_ID, seHocDuoc, chuongHoc);
+        const result = await quanLyKhoaHocService.addCourse(req.file, courseName, description, price, courseCategory_ID, willLearn, lessons);
 
         res.status(result.code).json(result);
     } catch (error) {
@@ -72,9 +72,9 @@ const addCourse = async (req, res, next) => {
 
 const updateCourse = async (req, res, next) => {
     try {
-        const { courseCode, courseName, moTa, giaTien, danhMucKhoaHoc_ID, seHocDuoc, chuongHoc } = req.body;
+        const { courseCode, courseName, description, price, courseCategory_ID, willLearn, lessons } = req.body;
 
-        const result = await quanLyKhoaHocService.updateCourse(req.file, courseCode, courseName, moTa, giaTien, danhMucKhoaHoc_ID, seHocDuoc, chuongHoc);
+        const result = await quanLyKhoaHocService.updateCourse(req.file, courseCode, courseName, description, price, courseCategory_ID, willLearn, lessons);
 
         res.status(result.code).json(result);
     } catch (error) {

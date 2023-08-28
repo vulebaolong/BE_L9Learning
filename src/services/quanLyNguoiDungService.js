@@ -8,53 +8,53 @@ const { uploadImg, deleteImg } = require("../helpers/ImgHelper");
 const isFileValidHelper = require("../helpers/isFileValidHelper");
 const { AVATAR_DEFAULT } = require("../contants/imgContant");
 const wait = require("../helpers/waitHelper");
-const KhoaHocModel = require("../models/khoaHocModel");
+const CourseModel = require("../models/courseModel");
 const changeObj = require("../helpers/changeObjHelper");
 
-const register = async (taiKhoan, matKhau, email, soDt, hoTen) => {
-    if (!taiKhoan) return responsesHelper(400, "Thiếu tài khoản");
-    if (!matKhau) return responsesHelper(400, "Thiếu mật khẩu");
+const register = async (username, password, email, phoneNumber, fullName) => {
+    if (!username) return responsesHelper(400, "Thiếu tài khoản");
+    if (!password) return responsesHelper(400, "Thiếu mật khẩu");
     if (!email) return responsesHelper(400, "Thiếu email");
-    if (!soDt) return responsesHelper(400, "Thiếu số điện thoại");
-    if (!hoTen) return responsesHelper(400, "Thiếu họ và tên");
+    if (!phoneNumber) return responsesHelper(400, "Thiếu số điện thoại");
+    if (!fullName) return responsesHelper(400, "Thiếu họ và tên");
 
-    const matKhauMoi = await hashedPassword(matKhau);
+    const matKhauMoi = await hashedPassword(password);
 
     const user = await UserModel.create({
-        taiKhoan,
-        matKhau: matKhauMoi,
+        username,
+        password: matKhauMoi,
         email,
-        soDt,
-        hoTen,
+        phoneNumber,
+        fullName,
     });
 
     return responsesHelper(200, "Xử lý thành công", {
         id: user._id,
-        taiKhoan: user.taiKhoan,
+        username: user.username,
         email: user.email,
-        soDt: user.soDt,
-        hoTen: user.hoTen,
-        maLoaiNguoiDung: user.maLoaiNguoiDung,
+        phoneNumber: user.phoneNumber,
+        fullName: user.fullName,
+        userType: user.userType,
     });
 };
 
-const login = async (taiKhoan, matKhau) => {
-    if (!taiKhoan) return responsesHelper(400, "Thiếu tài khoản");
-    if (!matKhau) return responsesHelper(400, "Thiếu mật khẩu");
+const login = async (username, password) => {
+    if (!username) return responsesHelper(400, "Thiếu tài khoản");
+    if (!password) return responsesHelper(400, "Thiếu mật khẩu");
 
-    const user = await UserModel.findOne({ taiKhoan }).select("+matKhau");
+    const user = await UserModel.findOne({ username }).select("+password");
     if (!user) return responsesHelper(401, "Tài khoản không tồn tại");
 
-    const isMatKhau = await checkPassword(matKhau, user.matKhau);
+    const isMatKhau = await checkPassword(password, user.password);
     if (!isMatKhau) return responsesHelper(401, "Mật khẩu không đúng");
 
     // tạo token
-    const accessToken = createJwt({ id: `${user._id}`, taiKhoan: user.taiKhoan, email: user.email, soDt: user.soDt, hoTen: user.hoTen }, "90d");
+    const accessToken = createJwt({ id: `${user._id}`, username: user.username, email: user.email, phoneNumber: user.phoneNumber, fullName: user.fullName }, "90d");
     if (!accessToken) return responsesHelper(500, "Lỗi server: Không tạo được token");
 
     const chiTietKhoaHocGhiDanh = await EnrollCourseModel.find({ user_ID: user._id })
         .select("-__v -updatedAt -createdAt -user_ID")
-        .populate("khoaHoc_ID", "hinhAnh moTa courseName");
+        .populate("khoaHoc_ID", "image description courseName");
 
     const chiTietKhoaHocGhiDanhResult = chiTietKhoaHocGhiDanh.map((item) => {
         return item.khoaHoc_ID;
@@ -63,12 +63,12 @@ const login = async (taiKhoan, matKhau) => {
     return responsesHelper(200, "Đăng nhập thành công", {
         chiTietKhoaHocGhiDanh: chiTietKhoaHocGhiDanhResult,
         id: user._id,
-        taiKhoan: user.taiKhoan,
+        username: user.username,
         email: user.email,
-        soDt: user.soDt,
-        hoTen: user.hoTen,
+        phoneNumber: user.phoneNumber,
+        fullName: user.fullName,
         accessToken,
-        maLoaiNguoiDung: user.maLoaiNguoiDung,
+        userType: user.userType,
         avatar: user.avatar,
         bannerProfile: user.bannerProfile,
     });
@@ -79,7 +79,7 @@ const getAccountInfo = async (user) => {
 
     const chiTietKhoaHocGhiDanh = await EnrollCourseModel.find({ user_ID: user.id })
         .select("-__v -updatedAt -createdAt -user_ID")
-        .populate("khoaHoc_ID", "hinhAnh moTa courseName");
+        .populate("khoaHoc_ID", "image description courseName");
 
     const chiTietKhoaHocGhiDanhResult = chiTietKhoaHocGhiDanh.map((item) => {
         return item.khoaHoc_ID;
@@ -88,24 +88,24 @@ const getAccountInfo = async (user) => {
     return responsesHelper(200, "Xử lý thành công", {
         chiTietKhoaHocGhiDanh: chiTietKhoaHocGhiDanhResult,
         id: userReturn._id,
-        taiKhoan: userReturn.taiKhoan,
+        username: userReturn.username,
         email: userReturn.email,
-        soDt: userReturn.soDt,
-        hoTen: userReturn.hoTen,
-        maLoaiNguoiDung: userReturn.maLoaiNguoiDung,
+        phoneNumber: userReturn.phoneNumber,
+        fullName: userReturn.fullName,
+        userType: userReturn.userType,
         bannerProfile: userReturn.bannerProfile,
         avatar: userReturn.avatar,
     });
 };
 
-const updateAccountInfo = async (email, hoTen, maLoaiNguoiDung, soDt, taiKhoan, user) => {
+const updateAccountInfo = async (email, fullName, userType, phoneNumber, username, user) => {
     if (!email) return responsesHelper(400, "Thiếu email");
-    if (!hoTen) return responsesHelper(400, "Thiếu họ tên");
-    if (!maLoaiNguoiDung) return responsesHelper(400, "Thiếu mã loại nơiời dùng");
-    if (!soDt) return responsesHelper(400, "Thiếu số điện thoại");
-    if (!taiKhoan) return responsesHelper(400, "Thiếu tài khoản");
+    if (!fullName) return responsesHelper(400, "Thiếu họ tên");
+    if (!userType) return responsesHelper(400, "Thiếu mã loại nơiời dùng");
+    if (!phoneNumber) return responsesHelper(400, "Thiếu số điện thoại");
+    if (!username) return responsesHelper(400, "Thiếu tài khoản");
 
-    const userUpdate = await UserModel.findByIdAndUpdate(user.id, { email, hoTen, maLoaiNguoiDung, soDt, taiKhoan }, { new: true });
+    const userUpdate = await UserModel.findByIdAndUpdate(user.id, { email, fullName, userType, phoneNumber, username }, { new: true });
 
     return responsesHelper(200, "Xử lý thành công", userUpdate);
 };
@@ -116,7 +116,7 @@ const updateOneAccountInfo = async (body, user) => {
     const key = keys[0];
 
     if (!key) return responsesHelper(400, "Thiếu thông tin cần sửa");
-    if (key === "matKhau") return responsesHelper(400, "Vui lòng dùng api updatePassword");
+    if (key === "password") return responsesHelper(400, "Vui lòng dùng api updatePassword");
     if (key === "avatar") return responsesHelper(400, "Vui lòng dùng api capNhatAvatar");
     if (key === "bannerProfile") return responsesHelper(400, "Vui lòng dùng api capNhatBannerProfile");
 
@@ -129,8 +129,8 @@ const updatePassword = async (currentPassword, newPassword, user) => {
     if (!currentPassword) return responsesHelper(400, "Thiếu mật khẩu hiện tại");
     if (!newPassword) return responsesHelper(400, "Thiếu mật khẩu mới");
 
-    const userDb = await UserModel.findById(user.id).select("+matKhau");
-    const matKhauDb = userDb.matKhau;
+    const userDb = await UserModel.findById(user.id).select("+password");
+    const matKhauDb = userDb.password;
 
     // kiểm tra mật khẩu current
     const isMatKhauCurrent = await checkPassword(currentPassword, matKhauDb);
@@ -140,7 +140,7 @@ const updatePassword = async (currentPassword, newPassword, user) => {
     const matKhauNewDb = await hashedPassword(newPassword);
 
     // lưu mật khẩu mới vào db
-    await UserModel.findByIdAndUpdate(user.id, { matKhau: matKhauNewDb });
+    await UserModel.findByIdAndUpdate(user.id, { password: matKhauNewDb });
 
     return responsesHelper(200, "Xử lý thành công", "Thay đổi mật khẩu thành công");
 };
@@ -162,8 +162,8 @@ const updateAccountAvatar = async (file, user) => {
         const userUpdate = await UserModel.findByIdAndUpdate(
             userDb._id,
             {
-                avatar: hinhAnhNew.hinhAnh,
-                tenAvatar: hinhAnhNew.tenHinhAnh,
+                avatar: hinhAnhNew.image,
+                avatarName: hinhAnhNew.imageName,
             },
             { new: true }
         );
@@ -174,7 +174,7 @@ const updateAccountAvatar = async (file, user) => {
     if (userDb.avatar !== AVATAR_DEFAULT) {
         console.log("Trường hợp thay đổi avart xoá avatar cũ");
         // xoá ảnh cũ
-        const isDeleteImg = await deleteImg(userDb.tenAvatar);
+        const isDeleteImg = await deleteImg(userDb.avatarName);
 
         if (!isDeleteImg) return responsesHelper(400, "Xử lý deleteImg hình ảnh không thành công");
 
@@ -184,8 +184,8 @@ const updateAccountAvatar = async (file, user) => {
         const userUpdate = await UserModel.findByIdAndUpdate(
             userDb._id,
             {
-                avatar: hinhAnhNew.hinhAnh,
-                tenAvatar: hinhAnhNew.tenHinhAnh,
+                avatar: hinhAnhNew.image,
+                avatarName: hinhAnhNew.imageName,
             },
             { new: true }
         );
@@ -211,8 +211,8 @@ const updateUserAvatar = async (file, userId) => {
         const userUpdate = await UserModel.findByIdAndUpdate(
             userDb._id,
             {
-                avatar: hinhAnhNew.hinhAnh,
-                tenAvatar: hinhAnhNew.tenHinhAnh,
+                avatar: hinhAnhNew.image,
+                avatarName: hinhAnhNew.imageName,
             },
             { new: true }
         );
@@ -223,7 +223,7 @@ const updateUserAvatar = async (file, userId) => {
     if (userDb.avatar !== AVATAR_DEFAULT) {
         console.log("Trường hợp thay đổi avart xoá avatar cũ");
         // xoá ảnh cũ
-        const isDeleteImg = await deleteImg(userDb.tenAvatar);
+        const isDeleteImg = await deleteImg(userDb.avatarName);
 
         if (!isDeleteImg) return responsesHelper(400, "Xử lý deleteImg hình ảnh không thành công");
 
@@ -233,8 +233,8 @@ const updateUserAvatar = async (file, userId) => {
         const userUpdate = await UserModel.findByIdAndUpdate(
             userDb._id,
             {
-                avatar: hinhAnhNew.hinhAnh,
-                tenAvatar: hinhAnhNew.tenHinhAnh,
+                avatar: hinhAnhNew.image,
+                avatarName: hinhAnhNew.imageName,
             },
             { new: true }
         );
@@ -283,7 +283,7 @@ const updateOneUserInfo = async (thongTin) => {
     const key = keys[0];
 
     if (!key) return responsesHelper(400, "Thiếu thông tin cần sửa");
-    if (key === "matKhau") return responsesHelper(400, "Vui lòng dùng api updatePassword");
+    if (key === "password") return responsesHelper(400, "Vui lòng dùng api updatePassword");
     if (key === "avatar") return responsesHelper(400, "Vui lòng dùng api capNhatAvatar");
     if (key === "bannerProfile") return responsesHelper(400, "Vui lòng dùng api capNhatBannerProfile");
 
@@ -307,7 +307,7 @@ const deleteUser = async (userId) => {
 
     // Trường hợp đã từng thay đổi avatar nên phải xoá avatar
     if (deletedNguoiDung.avatar !== AVATAR_DEFAULT) {
-        const isDeleteImg = await deleteImg(deletedNguoiDung.tenAvatar);
+        const isDeleteImg = await deleteImg(deletedNguoiDung.avatarName);
         if (!isDeleteImg) return responsesHelper(400, "Xử lý deleteImg hình ảnh không thành công");
     }
 
@@ -322,18 +322,18 @@ const getCoursesInfoForUsser = async (userId) => {
 
     // LỌC KHOÁ HỌC ĐÃ ĐĂNG KÝ =================================================================
     let khoaHocDaDangKy = changeObj(
-        await EnrollCourseModel.find({ user_ID: nguoiDung._id }).select("-__v -updatedAt -createdAt -user_ID").populate("khoaHoc_ID", "hinhAnh courseName")
+        await EnrollCourseModel.find({ user_ID: nguoiDung._id }).select("-__v -updatedAt -createdAt -user_ID").populate("khoaHoc_ID", "image courseName")
     );
-    khoaHocDaDangKy = khoaHocDaDangKy.map((khoaHoc) => {
-        return { ...khoaHoc.khoaHoc_ID };
+    khoaHocDaDangKy = khoaHocDaDangKy.map((courses) => {
+        return { ...courses.khoaHoc_ID };
     });
 
     // LỌC KHOÁ HỌC CHƯA ĐĂNG KÝ ===============================================================
-    const arrIdKhoaHocDaDangKy = khoaHocDaDangKy.map((khoaHoc) => khoaHoc._id);
+    const arrIdKhoaHocDaDangKy = khoaHocDaDangKy.map((courses) => courses._id);
 
     // từ mảng các id chứa khoá học đã đăng ký: arrIdKhoaHocDaDangKy
-    // tìm kiếm trong KhoaHocModel những documents không có trong arrIdKhoaHocDaDangKy
-    const khoaHocChuaDangKy = await KhoaHocModel.find({ _id: { $nin: arrIdKhoaHocDaDangKy } }).select("hinhAnh courseName");
+    // tìm kiếm trong CourseModel những documents không có trong arrIdKhoaHocDaDangKy
+    const khoaHocChuaDangKy = await CourseModel.find({ _id: { $nin: arrIdKhoaHocDaDangKy } }).select("image courseName");
 
     const result = {
         nguoiDung,

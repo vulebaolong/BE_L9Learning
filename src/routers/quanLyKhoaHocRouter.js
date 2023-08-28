@@ -14,9 +14,9 @@ router.get("/GetListCourseCategories", quanLyKhoaHocController.getListCourseCate
 //! những dòng mã chạy sau sẽ đều có protect, vì chạy theo thứ tự
 router.use(protect);
 router.post("/ThemDanhMucKhoaHoc", quanLyKhoaHocController.themDanhMucKhoaHoc);
-router.post("/AddCourse", upload.single("hinhAnh"), quanLyKhoaHocController.addCourse);
+router.post("/AddCourse", upload.single("image"), quanLyKhoaHocController.addCourse);
 router.delete("/DeleteCourse", quanLyKhoaHocController.deleteCourse);
-router.put("/UpdateCourse", upload.single("hinhAnh"), quanLyKhoaHocController.updateCourse);
+router.put("/UpdateCourse", upload.single("image"), quanLyKhoaHocController.updateCourse);
 router.post("/EnrollCourse", quanLyKhoaHocController.enrollCourse);
 router.post("/CancelEnrollment", quanLyKhoaHocController.cancelEnrollment);
 router.get("/GetUserInformationForCourse", quanLyKhoaHocController.getUserInformationForCourse);

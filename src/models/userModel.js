@@ -4,8 +4,8 @@ const { AVATAR_DEFAULT, BANNER_PROFILE_DEFAULT } = require("../contants/imgConta
 
 const userSchema = new mongoose.Schema(
     {
-        taiKhoan: { type: String, unique: true, trim: true },
-        matKhau: { type: String, select: false },
+        username: { type: String, unique: true, trim: true },
+        password: { type: String, select: false },
         email: {
             type: String,
             unique: true,
@@ -16,11 +16,11 @@ const userSchema = new mongoose.Schema(
                 message: "Email không hợp lệ",
             },
         },
-        soDt: { type: String, trim: true },
-        hoTen: { type: String, trim: true },
-        maLoaiNguoiDung: { type: String, trim: true, default: "KhachHang" },
+        phoneNumber: { type: String, trim: true },
+        fullName: { type: String, trim: true },
+        userType: { type: String, trim: true, default: "Customer" },
         avatar: { type: String, trim: true, default: AVATAR_DEFAULT },
-        tenAvatar: { type: String, trim: true },
+        avatarName: { type: String, trim: true },
         bannerProfile: { type: String, trim: true, default: BANNER_PROFILE_DEFAULT },
     },
     {
@@ -29,7 +29,7 @@ const userSchema = new mongoose.Schema(
     }
 );
 
-userSchema.path("matKhau").select(false);
+userSchema.path("password").select(false);
 
 // Tạo model User dựa trên schema đã định nghĩa
 const UserModel = mongoose.model("users", userSchema);

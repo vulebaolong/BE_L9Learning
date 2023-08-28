@@ -1,9 +1,9 @@
-const filterKhoaHocTheoDanhMuc = (danhMucKhoaHoc, danhSachKhoaHoc) => {
-    let khoaHocTheoDanhMuc = danhMucKhoaHoc.map((danhMuc) => {
+const filterKhoaHocTheoDanhMuc = (courseCategory, danhSachKhoaHoc) => {
+    let khoaHocTheoDanhMuc = courseCategory.map((danhMuc) => {
         return {
-            tenDanhMuc: danhMuc.tenDanhMuc,
-            khoaHocDanhMuc: danhSachKhoaHoc.filter((khoaHoc) => {
-                return khoaHoc.danhMucKhoaHoc_ID.tenDanhMuc === danhMuc.tenDanhMuc;
+            categoryName: danhMuc.categoryName,
+            khoaHocDanhMuc: danhSachKhoaHoc.filter((course) => {
+                return course.courseCategory_ID.categoryName === danhMuc.categoryName;
             }),
         };
     });
