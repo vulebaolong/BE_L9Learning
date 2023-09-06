@@ -13,7 +13,7 @@ const app = express();
 
 // Danh sách các đường dẫn được cho phép truy cập
 // const allowedOrigins = ["https://netflix-vulebaolong.netlify.app"];
-const allowedOrigins = ["https://l9-learning-vulebaolong.netlify.app"];
+const allowedOrigins = ["https://l9-learning-vulebaolong.netlify.app, https://l9-learning-nguyenthihuynhnhi.netlify.app"];
 
 const corsOptions = {
     origin: function (origin, callback) {
@@ -27,8 +27,8 @@ const corsOptions = {
     },
 };
 
-// app.use(cors(corsOptions));
-app.use(cors());
+app.use(cors(corsOptions));
+// app.use(cors());
 
 //  ===============MIDLEWARAE =========================
 // bảo vệ cho phép tài nguyên trong ứng dụng của bạn được truy cập từ các nguồn gốc khác nhau
